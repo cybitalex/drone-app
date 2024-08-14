@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Drone Detector &raquo; Analytics</title>
+
+	<!-- Favicon -->
+	<link rel="icon" href="assets/img/favicon.png" type="image/png">
+
+	<!-- Styling -->
+	<link rel="stylesheet" href="assets/style.css">
+
+	<!-- JavaScript functions -->
+	<script src="assets/js/functions.js"></script>
+
+	<!-- Toastify-js (https://apvarun.github.io/toastify-js/) -->
+	<link rel="stylesheet" type="text/css" href="assets/toastify-js/toastify-js-1.12.0/src/toastify.css">
+	<script src="assets/toastify-js/toastify-js-1.12.0/src/toastify.js"></script>
+
+	<!-- Style css  -->
+	<link  rel="stylesheet" href="assets/style/style.css">
+
+</head>
+
+<body style="background-color: #333";>
+	<div class="container">
+		<div class="row">
+			<header>
+				<nav id="navbar">
+					<a href="index.html" class="current_page" style="border-radius: 6px">Dashboard</a>
+					<a href="status.html" style="border-radius: 6px">Detailed System Status</a>
+					<a href="documentation.html" style="border-radius: 6px">Documentation</a>
+					<a href="control_panel.html" style="border-radius: 6px">Control Panel</a>
+					<a id="logout_button" style="border-radius: 6px";>Logout</a>
+				</nav>
+			</header>
+		</div>
+		<div class="row">
+			<div class="col mx-auto">
+				<h1 style="color: white";>Analytics</h1>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-10 mx-auto">
+				<div id="drones_over_time" style="width: 70%; height: 50vh; margin: auto;"></div>
+			</div>
+		</div>
+	</div>
+	<!-- echarts -->
+	<script src="assets/external/echarts_5.5.1/echarts.min.js"></script>
+	<script>
+		var drones_over_time = echarts.init(document.getElementById('drones_over_time'));
+		var option = {
+			tooltip: {
+				trigger: 'axis',
+				axisPointer: {
+					type: 'cross',
+					label: {
+						backgroundColor: 'white'
+					}
+				}
+			},
+			legend: {
+				data: ['Number of UAVs Detected']
+			},
+			xAxis: {
+				type: 'category',
+				boundaryGap: false,
+				data: ['2022-01-01', '2022-01-02', '2022-01-03', '2022-01-04', '2022-01-05', '2022-01-06', '2022-01-07'],
+				axisLine: {
+					show: true
+				},
+				axisTick: {
+					show: true
+				},
+				splitLine: {
+					show: true
+				}
+			},
+			yAxis: {
+				type: 'value',
+				axisLine: {
+					show: true
+				},
+				axisTick: {
+					show: true
+				},
+				splitLine: {
+					show: true
+				}
+			},
+			series: [{
+				name: 'Number of UAVs Detected',
+				type: 'line',
+				data: [5, 20, 36, 10, 10, 20, 30],
+				areaStyle: {},
+				itemStyle: {
+					color: 'white'
+				}
+			}]
+		};
+		drones_over_time.setOption(option);
+		
+	</script>
+	<footer style="color: white">
+		&copy; 2024 Lucas Burlingham, Cade Wied, Cameron Wied, All Rights Reserved.
+	</footer>
+</body>
+</html>

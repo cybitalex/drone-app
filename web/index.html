@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Drone Detector &raquo; Dashboard</title>
+
+	<!-- Favicon -->
+	<link rel="icon" href="assets/img/favicon.png" type="image/png">
+
+	<!-- JavaScript functions -->
+	<script src="assets/js/functions.js"></script>
+
+	<!-- Bootstrap CSS -->
+	<link rel="stylesheet" href="assets/external/bootstrap/bootstrap-5.3.3-dist/css/bootstrap.min.css">
+
+	<!-- Styling & User prefs -->
+	<link rel="stylesheet" href="assets/style/style.css">
+
+	<!-- Toastify-js (https://apvarun.github.io/toastify-js/) -->
+	<link rel="stylesheet" type="text/css" href="assets/external/toastify-js/toastify-js-1.12.0/src/toastify.css">
+	<script src="assets/external/toastify-js/toastify-js-1.12.0/src/toastify.js"></script>
+
+	<!-- Map functionality -->
+	<link rel="stylesheet" href="assets/external/leaflet/leaflet.css">
+	<script src="assets/external/leaflet/leaflet.js"></script>
+
+</head>
+
+<body>
+	<div class="container-fluid">
+		<header class="row">
+			<div class="col-10 mx-auto">
+				<nav id="navbar" style="">
+					<a href="index.html" class="current_page">Dashboard</a>
+					<a href="status.html" class="detailed_system">Detailed System Status</a>
+					<a href="documentation.html" class="documentaion">Documentation</a>
+					<a href="control_panel.html" class="control_panel">Control Panel</a>
+					<a href="analytics.html" class="analytics">Analytics</a>
+					<a id="logout_button" class="logOut" style="border-radius: 6px";>Logout</a>
+
+					<div class="dropdown">
+						<button id="theme_change_button" style="border-radius: 6px";>
+							Change Theme
+						</button>
+						<div class="dropdown-content" id="theme_chooser_dropdown">
+							<a id="light" class='dropdown-item'>Light</a>
+							<a id="dark" class='dropdown-item'>Dark</a>
+							<!-- <a id="nvg" class='dropdown-item'>NVG</a> -->
+						</div>
+					</div>
+				</nav>
+			</div>
+		</header>
+		<div class="row m-3">
+			<!-- Spans entire page -->
+			<div class="col">
+				<h1>Drone Detector Dashboard <span id="system_status" class="fs-6 align-middle"> </span></h1>
+			</div>
+		</div>
+		<div class="row">
+			<!-- Sidebar (left 1/6th of page or 2/12ths of page) -->
+			<div class="col-2" id="sidebar" style="border-radius: 6px">
+				<h2><span id="number_UAV_detected">
+						<!-- 
+							Number of UAV's detected. 
+							Dynamically inserted using JS. 
+						-->
+					</span>
+					UAV's Detected</h2>
+				<ul id="drone_list">
+					<!-- 
+						When clicked, these should be centered on the map and copy their MGRS coordinates to the clipboard.
+						Dynamically inserted using JS. 
+					-->
+				</ul>
+			</div>
+			<div class="col-10">
+				<div id="map">
+					<!-- This is where the map will be placed -->
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+
+
+	<script src="assets/js/map.js"></script>
+	
+	<!-- Status -->
+	<script src="assets/js/status.js"></script>
+
+	<!-- User Prefs -->
+	<script src="assets/js/control.js"></script>
+	<script src="assets/js/setting.js"></script>
+
+	<!-- Bootstrap Bundle JS -->
+	<script src="assets/external/bootstrap/bootstrap-5.3.3-dist/js/bootstrap.bundle.min.js"></script>
+
+	<!-- THIS PAGE REQUIRES THE USER TO BE LOGGED IN -->
+	<script src="assets/js/require_login.js"></script>
+
+	<footer>
+		&copy; 2024 Lucas Burlingham, Cade Wied, Cameron Wied, All Rights Reserved.
+	</footer>
+
+</body>
+
+</html>

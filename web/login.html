@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Drone Detector &raquo; Login</title>
+
+	<!-- Styling -->
+	<link rel="stylesheet" href="assets/style/style.css">
+
+	<!-- Load bootstrap -->
+	<link rel="stylesheet" href="assets/external/bootstrap/bootstrap-5.3.3-dist/css/bootstrap.css">
+	<script src="assets/external/bootstrap/bootstrap-5.3.3-dist/js/bootstrap.js"></script>
+	
+	<!-- Load toastify-js -->
+	<link rel="stylesheet" href="assets/external/toastify-js/toastify-js-1.12.0/src/toastify.css">
+	<script src="assets/external/toastify-js/toastify-js-1.12.0/src/toastify.js"></script>
+
+	<!-- Favicon -->
+	<link rel="icon" href="assets/img/favicon.png" type="image/png">
+	<script src="three.min.js"></script>
+    <script src="gio.min.js"></script>  
+</head>
+
+<body>
+	<div class="container">
+		<div class="row m-3">
+			<div class="col-10 mx-auto">
+				<div id="globeViz"></div>
+				<h1 style="color: white;">Drone Detector</h1>
+				<header style="color: white;" class="fst-italic">Please login before proceeding.</header>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-6 mx-auto" >
+				<form id="login_form" needs-validation>
+					<label for="login_username" class="form-label" style="color:white" >Username: </label>
+					<input type="text" name="username" id="login_username" class="form-control" required placeholder="admin">
+					<label for="login_password" class="form-label" style="color:white" >Password: </label>
+					<input type="password" name="password" id="login_password" class="form-control" required placeholder="admin">
+					<button type="submit" class="btn form-control mt-3" id="submit_form" style="border-radius: 6px";>Sign in</button>
+				</form>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-6 mx-auto my-1 text-center">
+				<p style="color: white;" class="fs-6">For this demonstration, please use <span style="text-decoration-style: dotted; font-style: italic; cursor: pointer;" id="demo_creds">admin</span> for both the username and password.</p>
+			</div>
+		</div>
+	</div>
+	<script>
+		let demo_creds = document.getElementById("demo_creds");
+
+		demo_creds.addEventListener("click", function () {
+			document.getElementById("login_username").value = "admin";
+			document.getElementById("login_password").value = "admin";
+			// copy to clipboard
+			navigator.clipboard.writeText('admin');
+
+			// Send a notification to the user using Toastify
+			Toastify({
+				text: "Credentials copied to clipboard.",
+				duration: 3000,
+				gravity: "top",
+				position: "right",
+				backgroundColor: "linear-gradient(to right, #626262, #2a2d2d)",
+				stopOnFocus: true,
+			}).showToast();
+
+		});
+	</script>
+	  <script src="//unpkg.com/globe.gl"></script>
+	  <!--<script src="../../dist/globe.gl.js"></script>-->
+	</head>
+	
+	<body>
+	  <div id="globeViz"></div>
+	
+	  <script>
+		// Gen random data
+		const N = 40;
+		const arcsData = [...Array(N).keys()].map(() => ({
+		  startLat: (Math.random() - 0.5) * 180,
+		  startLng: (Math.random() - 0.5) * 360,
+		  endLat: (Math.random() - 0.5) * 180,
+		  endLng: (Math.random() - 0.5) * 360,
+		  color: [['red', 'white', 'orange', 'purple'][Math.round(Math.random() * 3)], ['red', 'white', 'orange', 'purple'][Math.round(Math.random() * 3)]]
+		}));
+	
+		Globe()
+		  .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
+		  .arcsData(arcsData)
+		  .arcColor('color')
+		  .arcDashLength(() => Math.random())
+		  .arcDashGap(() => Math.random())
+		  .arcDashAnimateTime(() => Math.random() * 4000 + 500)
+		(document.getElementById('globeViz'))
+	   
+	  </script>
+	  <script>
+		/*
+		Check to see if the user is already logged in. If they are, redirect them to the index page.
+		*/
+
+		if (sessionStorage.getItem("logged_in") === "true") {
+			window.location.href = "index.html?redirected=true&reason=already_logged_in";
+		}
+
+		/*
+		If the username and password equal 'admin', let them in. Otherwise, display an alert.
+		OBVIOUSLY NOT SECURE. DEMO ONLY.
+		*/
+		document.getElementById("submit_form").addEventListener("click", function (event) {
+
+			// We aren't using this as an actual form, so prevent the default action
+			event.preventDefault()
+
+			// Let the user know they submitted the form by changing the button text to "Submitting..."
+			// and disable it so they don't click it again.
+			let submit_button = document.getElementById("submit_form");
+			submit_button.value = "Submitting...";
+			submit_button.disabled = true;
+
+			// Get the user's input
+			let input_password = document.getElementById("login_username").value;
+			let input_username = document.getElementById("login_password").value;
+
+			// Check if the input is correct
+			if (input_username == "admin" && input_password == "admin") {
+
+				// If the username and password are correct:
+				// Create a session and redirect to the index page
+				sessionStorage.setItem("logged_in", "true");
+				window.location.href = "index.html?redirected=true&reason=logged_in";
+
+			} else {
+				// Display alert and reload the page
+				alert("Login credentials incorrect. Please try again.");
+				location.reload();
+			}
+
+		});
+
+	</script>
+
+	<footer style="color: white;">
+		&copy; 2024 Lucas Burlingham, Cade Wied, Cameron Wied, All Rights Reserved.
+	</footer>
+</body>
+
+</html>

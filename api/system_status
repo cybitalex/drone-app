@@ -1,0 +1,22 @@
+[{
+	"gps": true,
+	"motor": true,
+	"compass": true,
+	"sys_time": 1520000000,
+	"disk_space": 10,
+	"system_service": [
+		{
+			"name": "apache2",
+			"status": "running"
+		},
+		{
+			"name": "gpsd",
+			"status": "running"
+		},
+		{
+			"name": "compass",
+			"status": "running"
+		}
+	],
+	"fan_speed": 4
+}]

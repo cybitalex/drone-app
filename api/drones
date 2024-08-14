@@ -1,0 +1,85 @@
+[
+	{
+		"drones_detected": 2,
+		"list": [
+			{
+				"drone_id": 1,
+				"drone_type": "commercial",
+				"drone_location": [
+					{
+						"lat": 37.7749,
+						"lon": -122.4194,
+						"MGRS": "10SEG1234567890"
+					}
+				],
+				"drone_altitude": 100,
+				"drone_speed": 10,
+				"drone_heading": 90,
+				"drone_observations": [
+					{
+						"index": 1,
+						"observation_time": 1721404480,
+						"observation_location": [
+							{
+								"lat": 37.7749,
+								"lon": -122.4194,
+								"MGRS": "10SEG1234567890"
+							}
+						]
+					}, 
+					{
+						"index": 2,
+						"observation_time": 1721404664,
+						"observation_location": [
+							{
+								"lat": 37.7749,
+								"lon": -122.4194,
+								"MGRS": "10SEG1234567890"
+							}
+						]
+					}
+				],
+				"info": "Drone 1"
+			},
+			{
+				"drone_id": 2,
+				"drone_type": "commercial",
+				"drone_location": [
+					{
+						"lat": 37.7749,
+						"lon": -122.4194,
+						"MGRS": "10SEG123445290"
+					}
+				],
+				"drone_altitude": 100,
+				"drone_speed": 10,
+				"drone_heading": 90,
+				"drone_observations": [
+					{
+						"index": 1,
+						"observation_time": 1721404480,
+						"observation_location": [
+							{
+								"lat": 37.7749,
+								"lon": -122.41945,
+								"MGRS": "10SEG1234567890"
+							}
+						]
+					}, 
+					{
+						"index": 2,
+						"observation_time": 1721404664,
+						"observation_location": [
+							{
+								"lat": 37.7749,
+								"lon": -122.41948,
+								"MGRS": "10SEG1234567890"
+							}
+						]
+					}
+				],
+				"drone_name": "Drone 2"
+			}
+		]
+	}
+]

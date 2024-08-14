@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drone Detector Dashboard</title>
+    <link rel="stylesheet" href="assets/style/style.css">
+    <style>
+        .checklist {
+            list-style-type: none;
+        }
+        .checklist-item {
+            padding: 10px;
+            margin: 5px 0;
+            color: white;
+        }
+        .checklist-item.green {
+            background-color: green;
+        }
+        .checklist-item.red {
+            background-color: green; /* Change this to red  when error occures */
+        }
+    </style>
+</head>
+<body style="background-color: #333";>
+    <nav id="navbar2">
+        <a href="index.html" style="border-radius: 6px;">Dashboard</a>
+        <a href="status.html" style="border-radius: 6px;">Detailed System Status</a>
+        <a href="control_panel.html" style="border-radius: 6px;" class="current_page">Control Panel</a>
+        <a href="analytics.html" style="border-radius: 6px;" class="analytics">Analytics</a>
+        <a id="logout_button" style="border-radius: 6px;">Logout</a>
+    </nav>
+    <ul class="checklist">
+        <li id="check-dashboard" class="checklist-item red" style="border-radius: 6px";>Dashboard Working</li>
+        <li id="check-map" class="checklist-item red" style="border-radius: 6px">Map Loaded</li>
+        <li id="check-drone" class="checklist-item red" style="border-radius: 6px">Drone Added</li>
+        <li id="check-geofence" class="checklist-item red" style="border-radius: 6px">Geofence Added</li>
+        <li id="check-socket" class="checklist-item red" style="border-radius: 6px">Socket Connected</li>
+        <li id="check-started" class="checklist-item red" style="border-radius: 6px">Drone Scan Started</li>
+    </ul>
+
+    <div id="map-container" style="height: 400px;"></div>
+
+    <!-- Include necessary JS libraries -->
+  
+</body>
+
+
+<!-- this will be change with actual functionality where colors change depening if the html is rendering right  -->
+ <!-- add red green and amber color with a click drop down menu that explains why -->
