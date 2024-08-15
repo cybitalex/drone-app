@@ -61,15 +61,30 @@ document.addEventListener('DOMContentLoaded', function () {
     // Function to determine the aircraft type
     function determineAircraftType(aircraft) {
         if (aircraft.category === "A1") {
-            return 'jet';
-        } else if (aircraft.category === "A2") {
-            return 'helicopter';
-        } else if (aircraft.category === "A3") {
+            return 'plane'; //light aircraft 
+        } else if (aircraft.category === "A2") { // small aircraft 
             return 'plane';
+        } else if (aircraft.category === "A3") { // large aircraft 
+            return 'airplane';
+        } else if (aircraft.category === "A4") { // High vortex large
+            return 'bomber';
+        } else if (aircraft.category === "A6") { // High Perfromance 
+            return 'jet';
+        } else if (aircraft.category === "A7") { // Rotorcraft
+            return 'helicopter';
+        } else if (aircraft.category === "N/A") {
+            return 'airplane'; 
+        } else if (aircraft.category === "B6") { // UAV
+            return 'favicon';
+        } else if (aircraft.category === "B2") { // Balloon
+            return 'hotairballoon';
+        } else if (aircraft.category === "B1"){ //glider 
+            return 'glider'
         } else {
-            return 'airplane'; // Default icon
+            return 'unknown'; 
         }
     }
+    
 
     // Function to add or update aircraft markers on the map
     function addOrUpdateMarker(aircraft) {
