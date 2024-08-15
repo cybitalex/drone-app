@@ -130,6 +130,54 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
     }
+    //function that adds the images of the airplane to the map depending on the type
+
+    var icons = {
+        plane: L.icon({
+            iconUrl: 'assets/img/plane.png',
+            iconSize: [25, 41],
+            iconAnchor: [12.5, 41],
+            popupAnchor: [0, -41]
+        }),
+        jet: L.icon({
+            iconUrl: 'assets/img/military.jet.png',
+            iconSize: [25, 41],
+            iconAnchor: [12.5, 41],
+            popupAnchor: [0, -41]
+        }),
+        helicopter: L.icon({
+            iconUrl: 'assets/img/military.helicopter.png',
+            iconSize: [25, 41],
+            iconAnchor: [12.5, 41],
+            popupAnchor: [0, -41]
+        }),
+        vtol: L.icon({
+            iconUrl: 'assets/img/military.vtol.png',
+            iconSize: [25, 41],
+            iconAnchor: [12.5, 41],
+            popupAnchor: [0, -41]
+        }),
+        bomber: L.icon({
+            iconUrl: 'assets/img/military.bomber.png',
+            iconSize: [25, 41],
+            iconAnchor: [12.5, 41],
+            popupAnchor: [0, -41]
+        }),
+        hotairballoon: L.icon({
+            iconUrl: 'assets/img/military.hotairballoon.png',
+            iconSize: [25, 41],
+            iconAnchor: [12.5, 41],
+            popupAnchor: [0, -41]
+        }),
+        airplane: L.icon({
+            iconUrl: 'assets/img/military.airplane.png',
+            iconSize: [25, 41],
+            iconAnchor: [12.5, 41],
+            popupAnchor: [0, -41]
+        }),
+        
+    }
+    
 });
 
-console.debug("%cLoaded map.js", 'color: #00ff00');
+

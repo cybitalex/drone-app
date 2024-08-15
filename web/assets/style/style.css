@@ -133,6 +133,7 @@ ul>li:hover>a {
 	margin: 4px 2px;
 	cursor: pointer;
 	length: 100%;
+	overflow: hidden;
 }
 
 .sidebar>a:hover {
