@@ -287,4 +287,6 @@ span#system_status.offline {
     border-radius: 10px;
 	margin-top: 40px;
 }
-
+#drone_list {
+	margin-bottom: 10px;
+}
