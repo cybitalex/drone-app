@@ -12,6 +12,98 @@ document.addEventListener('DOMContentLoaded', function () {
     // Store markers in a map for easy updating
     var aircraftMarkers = {};
 
+    // Define icons for different types of airplanes
+    var icons = {
+        plane: L.icon({
+            iconUrl: 'assets/img/plane.png',
+            iconSize: [25, 41],
+            iconAnchor: [12.5, 41],
+            popupAnchor: [0, -41]
+        }),
+        jet: L.icon({
+            iconUrl: 'assets/img/military.jet.png',
+            iconSize: [25, 41],
+            iconAnchor: [12.5, 41],
+            popupAnchor: [0, -41]
+        }),
+        helicopter: L.icon({
+            iconUrl: 'assets/img/military.helicopter.png',
+            iconSize: [25, 41],
+            iconAnchor: [12.5, 41],
+            popupAnchor: [0, -41]
+        }),
+        vtol: L.icon({
+            iconUrl: 'assets/img/military.vtol.png',
+            iconSize: [25, 41],
+            iconAnchor: [12.5, 41],
+            popupAnchor: [0, -41]
+        }),
+        bomber: L.icon({
+            iconUrl: 'assets/img/military.bomber.png',
+            iconSize: [25, 41],
+            iconAnchor: [12.5, 41],
+            popupAnchor: [0, -41]
+        }),
+        hotairballoon: L.icon({
+            iconUrl: 'assets/img/military.hotairballoon.png',
+            iconSize: [25, 41],
+            iconAnchor: [12.5, 41],
+            popupAnchor: [0, -41]
+        }),
+        airplane: L.icon({
+            iconUrl: 'assets/img/military.airplane.png',
+            iconSize: [25, 41],
+            iconAnchor: [12.5, 41],
+            popupAnchor: [0, -41]
+        }),
+    };
+
+    // Function to determine the aircraft type
+    function determineAircraftType(aircraft) {
+        if (aircraft.category === "A1") {
+            return 'plane'; //light aircraft 
+        } else if (aircraft.category === "A2") { // small aircraft 
+            return 'plane';
+        } else if (aircraft.category === "A3") { // large aircraft 
+            return 'airplane';
+        } else if (aircraft.category === "A4") { // High vortex large
+            return 'bomber';
+        } else if (aircraft.category === "A6") { // High Perfromance 
+            return 'jet';
+        } else if (aircraft.category === "A7") { // Rotorcraft
+            return 'helicopter';
+        } else if (aircraft.category === "N/A") {
+            return 'airplane'; 
+        } else if (aircraft.category === "B6") { // UAV
+            return 'favicon';
+        } else if (aircraft.category === "B2") { // Balloon
+            return 'hotairballoon';
+        } else if (aircraft.category === "B1"){ //glider 
+            return 'glider'
+        } else {
+            return 'unknown'; 
+        }
+    }
+    
+
+    // Function to add or update aircraft markers on the map
+    function addOrUpdateMarker(aircraft) {
+        var key = aircraft.hex; // Unique identifier for each aircraft
+        var latLon = [aircraft.lat, aircraft.lon];
+        var type = determineAircraftType(aircraft);
+
+        if (aircraftMarkers[key]) {
+            // Update existing marker
+            aircraftMarkers[key].setLatLng(latLon);
+        } else {
+            // Create new marker
+            var marker = L.marker(latLon, {icon: icons[type]})
+                .addTo(map)
+                .bindPopup(`<b>Flight:</b> ${aircraft.flight || 'N/A'}<br><b>Altitude:</b> ${aircraft.alt_baro || 'N/A'} ft<br><b>Speed:</b> ${aircraft.gs || 'N/A'} knots`);
+            aircraftMarkers[key] = marker;
+        }
+    }
+
     // Function to fetch and update aircraft data
     function updateAircraftData() {
         fetch('http://192.168.1.89/tar1090/data/aircraft.json')
@@ -19,23 +111,11 @@ document.addEventListener('DOMContentLoaded', function () {
           .then(data => {
             console.log(data);
 
-            data.aircraft
-              .filter(aircraft => isValidLatLng(aircraft.lat, aircraft.lon))
-              .forEach(aircraft => {
-                var key = aircraft.hex; // Use a unique identifier for each aircraft
-                var latLon = [aircraft.lat, aircraft.lon];
-                
-                if (aircraftMarkers[key]) {
-                    // Update existing marker
-                    aircraftMarkers[key].setLatLng(latLon);
-                } else {
-                    // Create new marker
-                    var marker = L.marker(latLon)
-                      .addTo(map)
-                      .bindPopup(`<b>Altitude:</b> ${aircraft.alt_baro || 'N/A'} ft<br><b>Speed:</b> ${aircraft.gs || 'N/A'} knots`);
-                    aircraftMarkers[key] = marker;
+            data.aircraft.forEach(aircraft => {
+                if (isValidLatLng(aircraft.lat, aircraft.lon)) {
+                    addOrUpdateMarker(aircraft);
                 }
-              });
+            });
 
             // Remove markers that are no longer in the data
             Object.keys(aircraftMarkers).forEach(key => {
@@ -52,7 +132,7 @@ document.addEventListener('DOMContentLoaded', function () {
     updateAircraftData();
     setInterval(updateAircraftData, 30000); // Refresh every 30 seconds
 
-    // Get and display the user's current location
+    // Geolocation to get and display the user's current location
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(function(position) {
             var lat = position.coords.latitude;
@@ -83,53 +163,8 @@ document.addEventListener('DOMContentLoaded', function () {
         console.error('Geolocation is not supported by this browser.');
     }
 
-    // Function to add drones
-    function addDrone(drone_id) {
-        var drone = drones.find(d => d.drone_id === drone_id);
-        var lat = drone.lat;
-        var lon = drone.lon;
-        var additional_info = drone.additional_info;
-        var MGRS_cord = " (" + MGRSString(lat, lon) + ")";
-        
-        if (isValidLatLng(lat, lon)) {
-            let marker = L.marker([lat, lon]) // Default marker
-                          .addTo(map);
-            marker.bindPopup(additional_info + MGRS_cord).openPopup();
-            
-            let drone_list_element = document.createElement("li");
-            drone_list_element.id = "drone_" + drone_id;
-            drone_list_element.onclick = function () {
-                centerOnMap(drone);
-            };
-            drone_list_element.innerHTML = "<button>" + additional_info + "</button>";
-            document.getElementById("drone_list").appendChild(drone_list_element);
-        } else {
-            console.error('Invalid LatLng object for drone:', drone);
-        }
-    }
-
     // Function to validate lat/lon
     function isValidLatLng(lat, lon) {
         return typeof lat === 'number' && typeof lon === 'number' && lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180;
     }
-
-    // Function to center map on drone location
-    function centerOnMap(drone) {
-        let drone_lat = drone.lat;
-        let drone_lon = drone.lon;
-
-        if (isValidLatLng(drone_lat, drone_lon)) {
-            map.setView([drone_lat, drone_lon], 13);
-
-            map.eachLayer(function (layer) {
-                if (layer instanceof L.Marker) {
-                    if (layer.getLatLng().lat === drone_lat && layer.getLatLng().lng === drone_lon) {
-                        layer.openPopup();
-                    }
-                }
-            });
-        }
-    }
 });
-
-console.debug("%cLoaded map.js", 'color: #00ff00');
