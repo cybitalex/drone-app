@@ -14,21 +14,39 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Store markers in a map for easy updating
     var aircraftMarkers = {};
+    var displayedUAVs = {}; // Track UAVs currently in the list
+
     // Function to update the UAV list in the sidebar
     function updateUAVList(aircraft) {
         var droneList = document.getElementById('drone_list');
-        var listItem = document.createElement('li');
-        listItem.textContent = `Flight: ${aircraft.flight || 'N/A'}, Altitude: ${aircraft.alt_baro || 'N/A'} ft, Speed: ${aircraft.gs || 'N/A'} knots`;
+        var key = aircraft.hex;
+        if (!displayedUAVs[key]) {
+            var listItem = document.createElement('li');
+            listItem.textContent = `Flight: ${aircraft.flight || 'N/A'}, Altitude: ${aircraft.alt_baro || 'N/A'} ft, Speed: ${aircraft.gs || 'N/A'} knots`;
+            listItem.id = key;
 
-        // Center the map on the selected UAV and copy MGRS coordinates to clipboard
-        listItem.addEventListener('click', function() {
-            map.setView([aircraft.lat, aircraft.lon], 13);
-            var mgrsCoord = MGRSString(aircraft.lat, aircraft.lon); // Replace with your MGRS conversion function
-            navigator.clipboard.writeText(mgrsCoord);
-            alert(`MGRS Coordinates copied to clipboard: ${mgrsCoord}`);
+            // Center the map on the selected UAV and copy MGRS coordinates to clipboard
+            listItem.addEventListener('click', function() {
+                map.setView([aircraft.lat, aircraft.lon], 13);
+                var mgrsCoord = MGRSString(aircraft.lat, aircraft.lon); // Replace with your MGRS conversion function
+                navigator.clipboard.writeText(mgrsCoord);
+                alert(`MGRS Coordinates copied to clipboard: ${mgrsCoord}`);
+            });
+
+            droneList.appendChild(listItem);
+            displayedUAVs[key] = listItem;
+        }
+    }
+
+    // Function to remove outdated UAVs from the list
+    function removeOutdatedUAVs(currentUAVs) {
+        Object.keys(displayedUAVs).forEach(key => {
+            if (!currentUAVs[key]) {
+                var listItem = displayedUAVs[key];
+                listItem.remove(); // Remove the UAV from the list
+                delete displayedUAVs[key]; // Remove it from the tracked UAVs
+            }
         });
-
-        droneList.appendChild(listItem);
     }
     // Define icons for different types of airplanes
     var icons = {
@@ -126,25 +144,28 @@ document.addEventListener('DOMContentLoaded', function () {
     // Function to fetch and update aircraft data
     function updateAircraftData() {
         fetch('http://192.168.1.89/tar1090/data/aircraft.json')
-          .then(response => response.json())
-          .then(data => {
-            console.log(data);
+            .then(response => response.json())
+            .then(data => {
+                var currentUAVs = {}; // Track the current UAVs being processed
 
-            data.aircraft.forEach(aircraft => {
-                if (isValidLatLng(aircraft.lat, aircraft.lon)) {
-                    addOrUpdateMarker(aircraft);
-                }
-            });
+                data.aircraft.forEach(aircraft => {
+                    if (isValidLatLng(aircraft.lat, aircraft.lon)) {
+                        currentUAVs[aircraft.hex] = aircraft; // Add to current UAVs
+                        addOrUpdateMarker(aircraft);
+                    }
+                });
 
-            // Remove markers that are no longer in the data
-            Object.keys(aircraftMarkers).forEach(key => {
-                if (!data.aircraft.some(aircraft => aircraft.hex === key)) {
-                    map.removeLayer(aircraftMarkers[key]);
-                    delete aircraftMarkers[key];
-                }
-            });
-          })
-          .catch(error => console.error('Error fetching aircraft data:', error));
+                removeOutdatedUAVs(currentUAVs); // Remove UAVs that are no longer detected
+
+                // Remove markers that are no longer in the data
+                Object.keys(aircraftMarkers).forEach(key => {
+                    if (!currentUAVs[key]) {
+                        map.removeLayer(aircraftMarkers[key]);
+                        delete aircraftMarkers[key];
+                    }
+                });
+            })
+            .catch(error => console.error('Error fetching aircraft data:', error));
     }
 
     // Initial fetch and set interval for periodic updates
