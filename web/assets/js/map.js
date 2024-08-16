@@ -3,15 +3,33 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Default map selection URL
     var map_selection = localStorage.getItem("map_selection") || "https://basemap.nationalmap.gov/ArcGIS/rest/services/USGSImageryTopo/MapServer/tile/{z}/{y}/{x}";
-    
-    L.tileLayer(map_selection, {
+
+    var tileLayer = L.tileLayer(map_selection, {
         maxZoom: 18,
         attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors'
     }).addTo(map);
 
+    // Apply the CSS filter to the map tiles
+    tileLayer.getContainer().style.filter = 'brightness(0.5)';  // Adjust the brightness as needed
+
     // Store markers in a map for easy updating
     var aircraftMarkers = {};
+    // Function to update the UAV list in the sidebar
+    function updateUAVList(aircraft) {
+        var droneList = document.getElementById('drone_list');
+        var listItem = document.createElement('li');
+        listItem.textContent = `Flight: ${aircraft.flight || 'N/A'}, Altitude: ${aircraft.alt_baro || 'N/A'} ft, Speed: ${aircraft.gs || 'N/A'} knots`;
 
+        // Center the map on the selected UAV and copy MGRS coordinates to clipboard
+        listItem.addEventListener('click', function() {
+            map.setView([aircraft.lat, aircraft.lon], 13);
+            var mgrsCoord = MGRSString(aircraft.lat, aircraft.lon); // Replace with your MGRS conversion function
+            navigator.clipboard.writeText(mgrsCoord);
+            alert(`MGRS Coordinates copied to clipboard: ${mgrsCoord}`);
+        });
+
+        droneList.appendChild(listItem);
+    }
     // Define icons for different types of airplanes
     var icons = {
         plane: L.icon({
@@ -93,14 +111,15 @@ document.addEventListener('DOMContentLoaded', function () {
         var type = determineAircraftType(aircraft);
 
         if (aircraftMarkers[key]) {
-            // Update existing marker
             aircraftMarkers[key].setLatLng(latLon);
         } else {
-            // Create new marker
             var marker = L.marker(latLon, {icon: icons[type]})
                 .addTo(map)
                 .bindPopup(`<b>Flight:</b> ${aircraft.flight || 'N/A'}<br><b>Altitude:</b> ${aircraft.alt_baro || 'N/A'} ft<br><b>Speed:</b> ${aircraft.gs || 'N/A'} knots`);
             aircraftMarkers[key] = marker;
+
+            // Update the UAV list
+            updateUAVList(aircraft);
         }
     }
 
@@ -130,7 +149,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Initial fetch and set interval for periodic updates
     updateAircraftData();
-    setInterval(updateAircraftData, 30000); // Refresh every 30 seconds
+    setInterval(updateAircraftData, 10000); // Refresh every 30 seconds
 
     // Geolocation to get and display the user's current location
     if (navigator.geolocation) {
@@ -149,7 +168,7 @@ document.addEventListener('DOMContentLoaded', function () {
             let current_location_marker = L.marker([lat, lon]).addTo(map);
             // Customize the marker icon for current location
             current_location_marker.setIcon(L.icon({
-                iconUrl: 'assets/img/house_marker.png',
+                iconUrl: 'assets/img/house.marker.png',
                 iconSize: [25, 41],
                 iconAnchor: [12.5, 41],
                 popupAnchor: [0, -41]
