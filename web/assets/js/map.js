@@ -143,7 +143,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Function to fetch and update aircraft data
     function updateAircraftData() {
-        fetch('http://192.168.1.89/tar1090/data/aircraft.json')
+        fetch('http://100.108.31.25/tar1090/data/aircraft.json')
             .then(response => response.json())
             .then(data => {
                 var currentUAVs = {}; // Track the current UAVs being processed
@@ -183,7 +183,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 color: 'red',
                 fillColor: '#f03',
                 fillOpacity: 0.2,
-                radius: 10000 // Radius in meters
+                radius: 16083 // Radius in meters
             }).addTo(map);
 
             let current_location_marker = L.marker([lat, lon]).addTo(map);
