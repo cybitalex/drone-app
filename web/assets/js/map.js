@@ -25,6 +25,24 @@ document.addEventListener('DOMContentLoaded', function () {
             listItem.textContent = `Flight: ${aircraft.flight || 'N/A'}, Altitude: ${aircraft.alt_baro || 'N/A'} ft, Speed: ${aircraft.gs || 'N/A'} knots`;
             listItem.id = key;
 
+            // Event listener for hovering over the list item
+            listItem.addEventListener('mouseenter', function() {
+                var marker = aircraftMarkers[key];
+                if (marker) {
+                    var popupContent = `<b>Flight:</b> ${aircraft.flight || 'N/A'}<br><b>Altitude:</b> ${aircraft.alt_baro || 'N/A'} ft<br><b>Speed:</b> ${aircraft.gs || 'N/A'} knots<br><b>Lat:</b> ${aircraft.lat}<br><b>Lon:</b> ${aircraft.lon}`;
+                    marker.openPopup();
+                    marker.setPopupContent(popupContent);
+                }
+            });
+
+            // Hide the popup when the mouse leaves the list item
+            listItem.addEventListener('mouseleave', function() {
+                var marker = aircraftMarkers[key];
+                if (marker) {
+                    marker.closePopup();
+                }
+            });
+
             // Center the map on the selected UAV and copy MGRS coordinates to clipboard
             listItem.addEventListener('click', function() {
                 map.setView([aircraft.lat, aircraft.lon], 13);
@@ -123,13 +141,13 @@ document.addEventListener('DOMContentLoaded', function () {
     
 
     function addOrUpdateMarker(aircraft) {
-        var key = aircraft.hex; // Unique identifier for each aircraft
+        var key = aircraft.hex;
         var latLon = [aircraft.lat, aircraft.lon];
         var type = determineAircraftType(aircraft);
-    
+
         var rotationAngle = aircraft.track || 0; // Use the aircraft's heading (track) or default to 0 if not available
-    
-        // Ensure PNGs are truly transparent and apply the transform to rotate them
+
+        // Create a custom icon with rotation
         var icon = L.divIcon({
             html: `<div style="transform: rotate(${rotationAngle}deg);"><img src="${icons[type].options.iconUrl}" style="width: ${icons[type].options.iconSize[0]}px; height: ${icons[type].options.iconSize[1]}px; background: none;"></div>`,
             iconSize: icons[type].options.iconSize,
@@ -137,20 +155,22 @@ document.addEventListener('DOMContentLoaded', function () {
             popupAnchor: icons[type].options.popupAnchor,
             className: '' // Remove the default class to avoid additional styling
         });
-    
+
         if (aircraftMarkers[key]) {
             aircraftMarkers[key].setLatLng(latLon);
             aircraftMarkers[key].setIcon(icon); // Update the icon with the new rotation
         } else {
             var marker = L.marker(latLon, {icon: icon})
                 .addTo(map)
-                .bindPopup(`<b>Flight:</b> ${aircraft.flight || 'N/A'}<br><b>Altitude:</b> ${aircraft.alt_baro || 'N/A'} ft<br><b>Speed:</b> ${aircraft.gs || 'N/A'} knots`);
+                .bindPopup(''); // Bind an empty popup initially
             aircraftMarkers[key] = marker;
-    
+
             // Update the UAV list
             updateUAVList(aircraft);
         }
     }
+    
+
     
 
 
