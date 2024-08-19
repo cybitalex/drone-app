@@ -122,24 +122,37 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     
 
-    // Function to add or update aircraft markers on the map
     function addOrUpdateMarker(aircraft) {
         var key = aircraft.hex; // Unique identifier for each aircraft
         var latLon = [aircraft.lat, aircraft.lon];
         var type = determineAircraftType(aircraft);
-
+    
+        var rotationAngle = aircraft.track || 0; // Use the aircraft's heading (track) or default to 0 if not available
+    
+        // Ensure PNGs are truly transparent and apply the transform to rotate them
+        var icon = L.divIcon({
+            html: `<div style="transform: rotate(${rotationAngle}deg);"><img src="${icons[type].options.iconUrl}" style="width: ${icons[type].options.iconSize[0]}px; height: ${icons[type].options.iconSize[1]}px; background: none;"></div>`,
+            iconSize: icons[type].options.iconSize,
+            iconAnchor: icons[type].options.iconAnchor,
+            popupAnchor: icons[type].options.popupAnchor,
+            className: '' // Remove the default class to avoid additional styling
+        });
+    
         if (aircraftMarkers[key]) {
             aircraftMarkers[key].setLatLng(latLon);
+            aircraftMarkers[key].setIcon(icon); // Update the icon with the new rotation
         } else {
-            var marker = L.marker(latLon, {icon: icons[type]})
+            var marker = L.marker(latLon, {icon: icon})
                 .addTo(map)
                 .bindPopup(`<b>Flight:</b> ${aircraft.flight || 'N/A'}<br><b>Altitude:</b> ${aircraft.alt_baro || 'N/A'} ft<br><b>Speed:</b> ${aircraft.gs || 'N/A'} knots`);
             aircraftMarkers[key] = marker;
-
+    
             // Update the UAV list
             updateUAVList(aircraft);
         }
     }
+    
+
 
     // Function to fetch and update aircraft data
     function updateAircraftData() {
