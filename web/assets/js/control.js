@@ -39,7 +39,8 @@ if (font_size) {
 	} catch (e) {
 		console.error(e);	
 	};
-}
+};
+
 
 console.debug("%cLoaded user preference theme: " + theme, 'color: #00ff00');
 console.debug("%cLoaded user preference map: " + map_selection, 'color: #00ff00');
