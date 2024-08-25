@@ -290,5 +290,9 @@ span#system_status.offline {
 #drone_list {
 	margin-bottom: 10px;
 }
+#sidebar {
+    border-radius: 6px;
+    border: 2px solid white; /* Ensure this line is correctly placed */
+}
 
 
