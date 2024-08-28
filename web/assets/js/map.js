@@ -176,7 +176,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Function to fetch and update aircraft data
     function updateAircraftData() {
-        fetch('https://100.108.31.25/tar1090/data/aircraft.json')
+        fetch('https://aircraft.wiedenterprise.com/tar1090/data/aircraft.json')
             .then(response => response.json())
             .then(data => {
                 var currentUAVs = {}; // Track the current UAVs being processed
