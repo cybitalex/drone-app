@@ -33,69 +33,38 @@
 
 <body style="background-color: #333;">
 	<div class="container-fluid">
-		<header class="row">
-			<div class="col-10 mx-auto">
-				<nav id="navbar" style="">
-					<a href="index.html" class="current_page">Dashboard</a>
-					<a href="documentation.html" class="documentaion">Documentation</a>
-					<a href="control_panel.html" class="control_panel">Control Panel</a>
-					<a href="analytics.html" class="analytics">Analytics</a>
-					<a id="logout_button" class="logOut" style="border-radius: 6px";>Logout</a>
-
-						</div>
-					</div>
-				</nav>
-			</div>
+		<header>
+			<nav id="navbar" class="nav-buttons">
+				<a href="index.html" class="current_page">Dashboard</a>
+				<a href="documentation.html" class="documentaion">Documentation</a>
+				<a href="control_panel.html" class="control_panel">Control Panel</a>
+				<a href="analytics.html" class="analytics">Analytics</a>
+				<a id="logout_button" class="logOut" style="border-radius: 6px">Logout</a>
+			</nav>
 		</header>
-		<div class="row m-3">
-			<!-- Spans entire page -->
-			<div class="col">
-				<h1 style="color: white";>Aircraft Detector Dashboard <span id="system_status" class="fs-6 align-middle"> </span></h1>
+		
+		<h1 style="color: white">Aircraft Detector Dashboard <span id="system_status" class="fs-6 align-middle"> </span></h1>
+		
+		<div class="map-container">
+			<div id="map">
+				<!-- This is where the map will be placed -->
 			</div>
-		</div>
-		<div class="row" style="color: white">
-			<!-- Sidebar (left 1/6th of page or 2/12ths of page) -->
-			 <!-- want to update with the airplane that is found  -->
-			<div class="col-2" id="sidebar">
-				
-				<h2 style="color: white"><span id="number_UAV_detected">
-						<!-- 
-							Number of UAV's detected. 
-							Dynamically inserted using JS. 
-						-->
-					</span>
-				Aircrafts Detected</h2>
+			<div id="sidebar">
+				<h2 style="color: white">
+					<span id="number_UAV_detected"></span> Aircrafts Detected
+				</h2>
 				<ul id="drone_list">
-					<!-- 
-						When clicked, these should be centered on the map and copy their MGRS coordinates to the clipboard.
-						Dynamically inserted using JS. 
-					-->
+					<!-- Dynamically inserted using JS -->
 				</ul>
 			</div>
-			<div class="col-10">
-				<div id="map">
-					<!-- This is where the map will be placed -->
-				</div>
-			</div>
-
 		</div>
 	</div>
 
-
-
 	<script src="assets/js/map.js"></script>
-	
-	<!-- Status -->
 	<script src="assets/js/status.js"></script>
-
-	<!-- User Prefs -->
 	<script src="assets/js/control.js"></script>
 	<script src="assets/js/setting.js"></script>
-
-	<!-- Bootstrap Bundle JS -->
 	<script src="assets/external/bootstrap/bootstrap-5.3.3-dist/js/bootstrap.bundle.min.js"></script>
-
-	<!-- THIS PAGE REQUIRES THE USER TO BE LOGGED IN -->
 	<script src="assets/js/require_login.js"></script>
 
 	<footer style="color: white">

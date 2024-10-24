@@ -22,7 +22,8 @@ document.addEventListener('DOMContentLoaded', function () {
         var key = aircraft.hex;
         if (!displayedUAVs[key]) {
             var listItem = document.createElement('li');
-            listItem.textContent = `Flight: ${aircraft.flight || 'N/A'}, Altitude: ${aircraft.alt_baro || 'N/A'} ft, Speed: ${aircraft.gs || 'N/A'} knots`;
+            // Shorten the displayed information for smaller screens
+            listItem.textContent = `${aircraft.flight || 'N/A'}: ${aircraft.alt_baro || 'N/A'}ft, ${aircraft.gs || 'N/A'}kn`;
             listItem.id = key;
 
             // Event listener for hovering over the list item

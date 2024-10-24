@@ -289,10 +289,287 @@ span#system_status.offline {
 }
 #drone_list {
 	margin-bottom: 10px;
+	font-size: 14px; /* Base font size for larger screens */
 }
 #sidebar {
     border-radius: 6px;
     border: 2px solid white; /* Ensure this line is correctly placed */
 }
+   .sidebar{
+	width: 100%;
+   }
 
+    #sidebar header, #sidebar .content {
+        flex: 1 1 100%;
+        max-width: 100%;  
+        min-width: 0; 
+        overflow: auto;
+    } 
+    #map {
+		height: 100%;
+        margin-top: 20px; /* Add some margin to separate from the sidebar */
+        width: 100% !important; /* Ensure the map takes full width */
+        z-index: 4;
+    }
 
+    .nav-buttons {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .nav-buttons a {
+        width: 90%; /* Ensure buttons fit within the screen */
+        margin-bottom: 10px;
+        font-size: 14px;
+        padding: 10px;
+    }
+
+    .detected-aircrafts p {
+        font-size: 12px;
+    }
+	@media (max-width: 390px) and (max-height: 844px) {
+		body {
+			font-size: xx-small; /* Adjust font size for smaller devices */
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			margin: 0;
+			padding: 0;
+		}
+	
+		#navbar {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+		}
+	
+		#navbar a {
+			width: 100%; /* Make navbar links take full width */
+			margin-bottom: 10px;
+			font-size: 14px;
+			padding: 10px;
+			text-align: center;
+		}
+	
+		#sidebar header, #sidebar .content {
+			flex: 1 1 100%; /* Increase the flex basis to give more width to the sidebar */
+			max-width: 100%; /* Allow the sidebar to take full width */
+			min-width: 0; /* Remove the minimum width constraint */
+			overflow: auto;
+		}
+	
+		#sidebar {
+			width: 100% !important; /* Make sidebar take full width */
+			font-size: xx-small;
+			margin-bottom: 20px; /* Add some margin to separate from the map */
+		}
+	
+		#map {
+			height: 100px !important; /* Reduce map height for smaller screens */
+			margin-top: 20px; /* Add some margin to separate from the sidebar */
+			width: 100% !important; /* Ensure the map takes full width */
+			z-index: 4;
+		}
+	
+		.nav-buttons {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+		}
+	
+		.nav-buttons a {
+			width: 90%; /* Ensure buttons fit within the screen */
+			margin-bottom: 10px;
+			font-size: 14px;
+			padding: 10px;
+		}
+	
+		.detected-aircrafts p {
+			font-size: 12px;
+		}
+	}
+
+/* Base styles for larger screens */
+.map-container {
+    display: flex;
+    height: 85vh;
+    margin-top: 20px; /* Add some space below the header */
+}
+
+#sidebar {
+    width: 15%;
+    overflow-y: auto;
+    border-radius: 6px;
+    border: 2px solid white;
+    max-height: 85vh;
+}
+
+#map {
+    width: 85%;
+    height: 85vh; /* Increase the map height for larger screens */
+    border: solid 4px white;
+    overflow: hidden;
+}
+
+/* Media query for laptops and larger screens */
+@media screen and (min-width: 1024px) {
+    .map-container {
+        height: 85vh;
+    }
+
+    #sidebar {
+        width: 15%;
+        max-height: 85vh;
+    }
+    
+    #map {
+        width: 85%;
+        height: 85vh;
+    }
+}
+
+/* Media query for tablets and smaller laptops */
+@media screen and (max-width: 1023px) and (min-width: 768px) {
+    .map-container {
+        height: 80vh;
+    }
+
+    #sidebar {
+        width: 25%;
+        max-height: 80vh;
+    }
+    
+    #map {
+        width: 75%;
+        height: 80vh;
+    }
+
+    #drone_list {
+        font-size: 12px; /* Slightly smaller font for tablets */
+    }
+}
+
+/* Media query for phones and smaller screens */
+@media screen and (max-width: 767px) {
+    body {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+
+    .container-fluid {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+    }
+
+    header {
+        flex-shrink: 0;
+    }
+
+    .map-container {
+        display: flex;
+        flex-direction: column;
+    }
+
+    #map {
+        width: 100%;
+        height: 70vh; /* Adjust this value as needed */
+        order: 1;
+    }
+
+    #sidebar {
+        width: 100%;
+        max-height: 25vh; /* Adjust this value as needed */
+        overflow-y: auto;
+        order: 2;
+        margin-top: 10px; /* Add some space between map and sidebar */
+    }
+
+    #drone_list {
+        font-size: 0.9rem;
+        padding: 0;
+        list-style-type: none;
+    }
+
+    #drone_list li {
+        padding: 5px 0;
+    }
+
+    h2 {
+        font-size: 1.2rem;
+        margin: 5px 0;
+    }
+}
+
+/* Additional styles for very small screens */
+@media screen and (max-width: 480px) {
+    #map {
+        height: 70vh; /* Further increase map height for very small screens */
+    }
+
+    #sidebar {
+        max-height: 25vh; /* Even smaller sidebar for very small screens */
+    }
+
+    #drone_list {
+        font-size: 9px; /* Even smaller font for very small screens */
+        max-height: 20vh; /* Further limit the list height */
+    }
+}
+
+#drone_list li {
+    padding: 5px 0;
+}
+
+/* Add these styles at the end of your existing CSS file */
+
+/* Hide the overlay */
+div[style*="background-color: red"] {
+    display: none;
+}
+
+/* Style the Aircraft Detected section */
+#sidebar {
+    background-color: white;
+    color: black;
+    padding: 10px;
+    border-radius: 6px;
+    border: 2px solid #333;
+}
+
+#sidebar h2 {
+    color: black;
+    margin-top: 0;
+}
+
+#drone_list {
+    color: black;
+    background-color: white;
+}
+
+#drone_list li {
+    background-color: white;
+    color: black;
+    border-bottom: 1px solid #ddd;
+    padding: 8px 0;
+}
+
+#drone_list li:last-child {
+    border-bottom: none;
+}
+
+/* Adjust styles for mobile view */
+@media screen and (max-width: 767px) {
+    #sidebar {
+        background-color: white;
+        color: black;
+        margin-top: 10px;
+        max-height: none;
+        overflow-y: visible;
+    }
+
+    #map {
+        height: 60vh; /* Reduce map height to give more space to the list */
+    }
+}
