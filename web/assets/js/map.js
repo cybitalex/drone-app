@@ -241,4 +241,34 @@ document.addEventListener('DOMContentLoaded', function () {
     function isValidLatLng(lat, lon) {
         return typeof lat === 'number' && typeof lon === 'number' && lat >= -90 && lat <= 90 && lon >= -180 && lon <= 180;
     }
+
+    // Add this function at the beginning of the file
+    function focusOnAirplane(icao24) {
+        const airplane = airplanes.find(a => a.icao24 === icao24);
+        if (airplane) {
+            map.setView([airplane.lat, airplane.lon], 12);
+            const marker = airplaneMarkers.get(icao24);
+            if (marker) {
+                marker.openPopup();
+            }
+        }
+    }
+
+    // Modify the updateDroneList function
+    function updateDroneList() {
+        const droneList = document.getElementById('drone_list');
+        droneList.innerHTML = '';
+        airplanes.forEach(airplane => {
+            const li = document.createElement('li');
+            li.textContent = `${airplane.callsign || 'N/A'} (${airplane.icao24})`;
+            li.setAttribute('data-icao24', airplane.icao24);
+            li.addEventListener('click', () => focusOnAirplane(airplane.icao24));
+            droneList.appendChild(li);
+        });
+    }
+
+    // In the updateMap function, modify the marker creation:
+    const marker = L.marker([airplane.lat, airplane.lon], { icon: airplaneIcon }).addTo(map);
+    marker.bindPopup(`Callsign: ${airplane.callsign || 'N/A'}<br>ICAO24: ${airplane.icao24}<br>Altitude: ${airplane.altitude} m`);
+    airplaneMarkers.set(airplane.icao24, marker);
 });

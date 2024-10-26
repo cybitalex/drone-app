@@ -553,6 +553,11 @@ div[style*="background-color: red"] {
     color: black;
     border-bottom: 1px solid #ddd;
     padding: 8px 0;
+    cursor: pointer; /* Add this line */
+}
+
+#drone_list li:hover {
+    background-color: #f0f0f0; /* Add this block */
 }
 
 #drone_list li:last-child {
@@ -571,5 +576,56 @@ div[style*="background-color: red"] {
 
     #map {
         height: 60vh; /* Reduce map height to give more space to the list */
+    }
+}
+
+/* Modify the existing .map-container styles */
+.map-container {
+    display: flex;
+    flex-direction: row;
+    height: calc(100vh - 120px); /* Reduce the height to move content down */
+    margin-top: 120px; /* Increase this value to move the container down */
+}
+
+#sidebar {
+    width: 20%;
+    height: 100%;
+    overflow-y: auto;
+    border-radius: 6px;
+    border: 2px solid #333;
+    background-color: white;
+    color: black;
+    padding: 10px;
+    margin-top: 20px; /* Add some top margin to the sidebar */
+}
+
+#map {
+    width: 80%;
+    height: 100%;
+    border: solid 4px white;
+    margin-top: 20px; /* Add some top margin to the map as well */
+}
+
+/* Adjust styles for mobile view */
+@media screen and (max-width: 767px) {
+    .map-container {
+        flex-direction: column;
+        height: calc(100vh - 120px);
+        margin-top: 100px; /* Adjust for mobile */
+    }
+
+    #sidebar {
+        width: 100%;
+        height: 30%;
+        max-height: none;
+        order: 2;
+        margin-top: 10px;
+    }
+
+    #map {
+        width: 100%;
+        height: 70%;
+        order: 1;
+        margin-top: 10px;
     }
 }
