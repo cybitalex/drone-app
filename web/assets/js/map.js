@@ -159,15 +159,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (aircraftMarkers[key]) {
             aircraftMarkers[key].setLatLng(latLon);
-            aircraftMarkers[key].setIcon(icon); // Update the icon with the new rotation
+            aircraftMarkers[key].setIcon(icon);
         } else {
             var marker = L.marker(latLon, {icon: icon})
                 .addTo(map)
-                .bindPopup(''); // Bind an empty popup initially
+                .bindPopup('');
             aircraftMarkers[key] = marker;
 
             // Update the UAV list
             updateUAVList(aircraft);
+        }
+
+        // Check if the aircraft is inside the danger zone
+        if (dangerZone && dangerZone.getBounds().contains(latLon)) {
+            showWarningAlert(aircraft);
         }
     }
     
@@ -207,13 +212,18 @@ document.addEventListener('DOMContentLoaded', function () {
     setInterval(updateAircraftData, 10000); // Refresh every 30 seconds
 
     // Geolocation to get and display the user's current location
+    let userLocation;
+    let dangerZone;
+
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(function(position) {
             var lat = position.coords.latitude;
             var lon = position.coords.longitude;
 
+            userLocation = [lat, lon];
+
             // Add a danger zone circle to the map
-            L.circle([lat, lon], {
+            dangerZone = L.circle([lat, lon], {
                 color: 'red',
                 fillColor: '#f03',
                 fillOpacity: 0.2,
@@ -232,6 +242,9 @@ document.addEventListener('DOMContentLoaded', function () {
             current_location_marker.bindPopup("Current Location" + " (" + MGRSString(lat, lon) + ")");
 
             map.setView([lat, lon], 9); // Center the map on the current location
+
+            // Add this line to create a fake aircraft after a short delay
+            setTimeout(addFakeAircraft, 2000);
         });
     } else {
         console.error('Geolocation is not supported by this browser.');
@@ -271,4 +284,47 @@ document.addEventListener('DOMContentLoaded', function () {
     const marker = L.marker([airplane.lat, airplane.lon], { icon: airplaneIcon }).addTo(map);
     marker.bindPopup(`Callsign: ${airplane.callsign || 'N/A'}<br>ICAO24: ${airplane.icao24}<br>Altitude: ${airplane.altitude} m`);
     airplaneMarkers.set(airplane.icao24, marker);
+
+    // Add these new functions
+    function showWarningPopup() {
+        if (popupMessage) {
+            popupMessage.style.display = 'block';
+            // Hide the message after 5 seconds
+            setTimeout(hideWarningPopup, 5000);
+        }
+    }
+
+    function hideWarningPopup() {
+        if (popupMessage) {
+            popupMessage.style.display = 'none';
+        }
+    }
+
+    function showWarningAlert(aircraft) {
+        alert(`Aircraft detected close to your position!\nFlight: ${aircraft.flight || 'N/A'}\nAltitude: ${aircraft.alt_baro || 'N/A'} ft\nSpeed: ${aircraft.gs || 'N/A'} knots`);
+    }
+
+    // Add this function near the top of your file, after the document.addEventListener('DOMContentLoaded', function () { ... line
+    function addFakeAircraft() {
+        if (userLocation && dangerZone) {
+            // Generate a random position within the danger zone
+            const angle = Math.random() * 2 * Math.PI;
+            const radius = Math.sqrt(Math.random()) * dangerZone.getRadius();
+            const x = userLocation[0] + (radius * Math.cos(angle) / 111111);
+            const y = userLocation[1] + (radius * Math.sin(angle) / (111111 * Math.cos(userLocation[0] * Math.PI / 180)));
+
+            const fakeAircraft = {
+                hex: 'FAKE01',
+                flight: 'TEST123',
+                lat: x,
+                lon: y,
+                alt_baro: Math.floor(Math.random() * 10000) + 1000,
+                gs: Math.floor(Math.random() * 500) + 100,
+                category: 'A1'
+            };
+
+            addOrUpdateMarker(fakeAircraft);
+            showWarningAlert(fakeAircraft);
+        }
+    }
 });
