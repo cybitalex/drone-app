@@ -55,25 +55,62 @@ document.addEventListener('DOMContentLoaded', function () {
         }, duration);
     }
 
+    // Function to determine threat level based on aircraft behavior
+    function determineThreatLevel(aircraft) {
+        // Military or unidentified aircraft (no flight/callsign info)
+        if (!aircraft.flight || aircraft.flight.trim() === '' || 
+            aircraft.flight.includes('MIL') || 
+            aircraft.flight.includes('RCH') || 
+            aircraft.flight.includes('DRACO') ||
+            aircraft.category === "A6" || // High performance
+            aircraft.category === "A4") { // High vortex large
+            return 'medium';
+        }
+        
+        // Erratic behavior or violating airspace (near danger zone with high speed or low altitude)
+        if (aircraft.gs > 450 || // Very high speed (knots)
+            (aircraft.alt_baro && aircraft.alt_baro < 1000) || // Very low altitude
+            (dangerZone && 
+             aircraft.lat && aircraft.lon && 
+             dangerZone.getBounds().contains([aircraft.lat, aircraft.lon]))) {
+            return 'high';
+        }
+        
+        // Normal commercial flights
+        return 'low';
+    }
+
     // Function to update the UAV list in the sidebar
     function updateUAVList(aircraft, isCached = false) {
         var droneList = document.getElementById('drone_list');
         var key = aircraft.hex;
         if (!displayedUAVs[key]) {
+            var threatLevel = determineThreatLevel(aircraft);
+            
             var listItem = document.createElement('li');
-            // Shorten the displayed information for smaller screens
-            listItem.textContent = `${aircraft.flight || 'N/A'}: ${aircraft.alt_baro || 'N/A'}ft, ${aircraft.gs || 'N/A'}kn`;
+            
+            // Add threat level indicator
+            var threatIndicator = document.createElement('span');
+            threatIndicator.className = `threat-level threat-level-${threatLevel}`;
+            listItem.appendChild(threatIndicator);
+            
+            // Add text content
+            var textSpan = document.createElement('span');
+            textSpan.textContent = `${aircraft.flight || 'N/A'}: ${aircraft.alt_baro || 'N/A'}ft, ${aircraft.gs || 'N/A'}kn`;
             if (isCached) {
-                listItem.textContent += ' (C)';
-                listItem.style.opacity = '0.7';
+                textSpan.textContent += ' (C)';
+                textSpan.style.opacity = '0.7';
             }
+            listItem.appendChild(textSpan);
+            
             listItem.id = key;
+            listItem.dataset.threatLevel = threatLevel;
 
             // Event listener for hovering over the list item
             listItem.addEventListener('mouseenter', function() {
                 var marker = aircraftMarkers[key];
                 if (marker) {
-                    var popupContent = `<b>Flight:</b> ${aircraft.flight || 'N/A'}<br><b>Altitude:</b> ${aircraft.alt_baro || 'N/A'} ft<br><b>Speed:</b> ${aircraft.gs || 'N/A'} knots<br><b>Lat:</b> ${aircraft.lat}<br><b>Lon:</b> ${aircraft.lon}`;
+                    var popupContent = `<b>Flight:</b> ${aircraft.flight || 'N/A'}<br><b>Altitude:</b> ${aircraft.alt_baro || 'N/A'} ft<br><b>Speed:</b> ${aircraft.gs || 'N/A'} knots<br><b>Lat:</b> ${aircraft.lat}<br><b>Lon:</b> ${aircraft.lon}<br><b>Threat:</b> ${threatLevel.toUpperCase()}`;
                     marker.openPopup();
                     marker.setPopupContent(popupContent);
                 }
@@ -188,15 +225,22 @@ document.addEventListener('DOMContentLoaded', function () {
         var key = aircraft.hex;
         var latLon = [aircraft.lat, aircraft.lon];
         var type = determineAircraftType(aircraft);
-
+        var threatLevel = determineThreatLevel(aircraft);
         var rotationAngle = aircraft.track || 0;
 
+        // Create marker with threat level ring
         var icon = L.divIcon({
-            html: `<div style="transform: rotate(${rotationAngle}deg);"><img src="${icons[type].options.iconUrl}" style="width: ${icons[type].options.iconSize[0]}px; height: ${icons[type].options.iconSize[1]}px; background: none;"></div>`,
-            iconSize: icons[type].options.iconSize,
-            iconAnchor: icons[type].options.iconAnchor,
-            popupAnchor: icons[type].options.popupAnchor,
-            className: isCached ? 'cached-aircraft' : '' // Add a class for cached aircraft
+            html: `
+                <div class="threat-ring-${threatLevel}" style="width: 40px; height: 40px; position: relative;">
+                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(${rotationAngle}deg);">
+                        <img src="${icons[type].options.iconUrl}" style="width: ${icons[type].options.iconSize[0]}px; height: ${icons[type].options.iconSize[1]}px; background: none;">
+                    </div>
+                </div>
+            `,
+            iconSize: [40, 40],
+            iconAnchor: [20, 20],
+            popupAnchor: [0, -20],
+            className: isCached ? `cached-aircraft threat-${threatLevel}` : `threat-${threatLevel}`
         });
 
         if (aircraftMarkers[key]) {
@@ -211,8 +255,10 @@ document.addEventListener('DOMContentLoaded', function () {
             updateUAVList(aircraft, isCached);
         }
 
-        if (dangerZone && dangerZone.getBounds().contains(latLon) && !isCached) {
-            // Replace alert with notification
+        // Show warning for high threat aircraft
+        if (threatLevel === 'high' && !isCached) {
+            showThreatNotification(aircraft);
+        } else if (dangerZone && dangerZone.getBounds().contains(latLon) && !isCached) {
             showWarningNotification(aircraft);
         }
     }
@@ -222,6 +268,39 @@ document.addEventListener('DOMContentLoaded', function () {
         var title = 'Aircraft in Proximity';
         var message = `${aircraft.flight || 'N/A'}: ${aircraft.alt_baro || 'N/A'}ft, ${aircraft.gs || 'N/A'}kn`;
         showNotification('warning', title, message, 5000);
+    }
+
+    // Function to show threat notification for high-threat aircraft
+    function showThreatNotification(aircraft) {
+        var title = 'HIGH THREAT DETECTED';
+        var message = `${aircraft.flight || 'UNKNOWN'}: ${aircraft.alt_baro || 'N/A'}ft, ${aircraft.gs || 'N/A'}kn`;
+        var notification = document.createElement('div');
+        notification.className = 'notification threat-high';
+        
+        var content = document.createElement('div');
+        content.className = 'notification-content';
+        
+        var titleElement = document.createElement('div');
+        titleElement.className = 'notification-title';
+        titleElement.textContent = title;
+        
+        var messageElement = document.createElement('div');
+        messageElement.className = 'notification-message';
+        messageElement.textContent = message;
+        
+        content.appendChild(titleElement);
+        content.appendChild(messageElement);
+        notification.appendChild(content);
+        
+        notificationContainer.appendChild(notification);
+        
+        // Remove notification after duration
+        setTimeout(function() {
+            notification.classList.add('hiding');
+            setTimeout(function() {
+                notification.remove();
+            }, 200);
+        }, 7000);
     }
 
     // Function to fetch and update aircraft data
