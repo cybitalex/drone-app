@@ -45,17 +45,20 @@
 		
 		<h1 style="color: white">Aircraft Detector Dashboard <span id="system_status" class="fs-6 align-middle"> </span></h1>
 		
+		<div class="aircraft-badge-container">
+			<div class="aircraft-badge" id="number_UAV_detected">0</div>
+		</div>
+		
 		<div class="map-container">
-			<div id="map">
-				<!-- This is where the map will be placed -->
-			</div>
-			<div id="sidebar">
-				<h2 style="color: white">
-					<span id="number_UAV_detected"></span> Aircrafts Detected
-				</h2>
-				<ul id="drone_list">
-					<!-- Dynamically inserted using JS -->
-				</ul>
+			<div class="map-content">
+				<div id="map">
+					<!-- This is where the map will be placed -->
+				</div>
+				<div id="sidebar">
+					<ul id="drone_list">
+						<!-- Dynamically inserted using JS -->
+					</ul>
+				</div>
 			</div>
 		</div>
 	</div>

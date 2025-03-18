@@ -16,14 +16,57 @@ document.addEventListener('DOMContentLoaded', function () {
     var aircraftMarkers = {};
     var displayedUAVs = {}; // Track UAVs currently in the list
 
+    // Create notification container if it doesn't exist
+    var notificationContainer = document.querySelector('.notification-container');
+    if (!notificationContainer) {
+        notificationContainer = document.createElement('div');
+        notificationContainer.className = 'notification-container';
+        document.body.appendChild(notificationContainer);
+    }
+
+    // Function to show in-app notification instead of alert
+    function showNotification(type, title, message, duration = 3000) {
+        var notification = document.createElement('div');
+        notification.className = 'notification ' + type;
+        
+        var content = document.createElement('div');
+        content.className = 'notification-content';
+        
+        var titleElement = document.createElement('div');
+        titleElement.className = 'notification-title';
+        titleElement.textContent = title;
+        
+        var messageElement = document.createElement('div');
+        messageElement.className = 'notification-message';
+        messageElement.textContent = message;
+        
+        content.appendChild(titleElement);
+        content.appendChild(messageElement);
+        notification.appendChild(content);
+        
+        notificationContainer.appendChild(notification);
+        
+        // Remove notification after duration
+        setTimeout(function() {
+            notification.classList.add('hiding');
+            setTimeout(function() {
+                notification.remove();
+            }, 200);
+        }, duration);
+    }
+
     // Function to update the UAV list in the sidebar
-    function updateUAVList(aircraft) {
+    function updateUAVList(aircraft, isCached = false) {
         var droneList = document.getElementById('drone_list');
         var key = aircraft.hex;
         if (!displayedUAVs[key]) {
             var listItem = document.createElement('li');
             // Shorten the displayed information for smaller screens
             listItem.textContent = `${aircraft.flight || 'N/A'}: ${aircraft.alt_baro || 'N/A'}ft, ${aircraft.gs || 'N/A'}kn`;
+            if (isCached) {
+                listItem.textContent += ' (C)';
+                listItem.style.opacity = '0.7';
+            }
             listItem.id = key;
 
             // Event listener for hovering over the list item
@@ -49,7 +92,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 map.setView([aircraft.lat, aircraft.lon], 13);
                 var mgrsCoord = MGRSString(aircraft.lat, aircraft.lon); // Replace with your MGRS conversion function
                 navigator.clipboard.writeText(mgrsCoord);
-                alert(`MGRS Coordinates copied to clipboard: ${mgrsCoord}`);
+                showNotification('info', 'Coordinates Copied', `MGRS: ${mgrsCoord}`);
             });
 
             droneList.appendChild(listItem);
@@ -141,20 +184,19 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     
 
-    function addOrUpdateMarker(aircraft) {
+    function addOrUpdateMarker(aircraft, isCached = false) {
         var key = aircraft.hex;
         var latLon = [aircraft.lat, aircraft.lon];
         var type = determineAircraftType(aircraft);
 
-        var rotationAngle = aircraft.track || 0; // Use the aircraft's heading (track) or default to 0 if not available
+        var rotationAngle = aircraft.track || 0;
 
-        // Create a custom icon with rotation
         var icon = L.divIcon({
             html: `<div style="transform: rotate(${rotationAngle}deg);"><img src="${icons[type].options.iconUrl}" style="width: ${icons[type].options.iconSize[0]}px; height: ${icons[type].options.iconSize[1]}px; background: none;"></div>`,
             iconSize: icons[type].options.iconSize,
             iconAnchor: icons[type].options.iconAnchor,
             popupAnchor: icons[type].options.popupAnchor,
-            className: '' // Remove the default class to avoid additional styling
+            className: isCached ? 'cached-aircraft' : '' // Add a class for cached aircraft
         });
 
         if (aircraftMarkers[key]) {
@@ -166,50 +208,58 @@ document.addEventListener('DOMContentLoaded', function () {
                 .bindPopup('');
             aircraftMarkers[key] = marker;
 
-            // Update the UAV list
-            updateUAVList(aircraft);
+            updateUAVList(aircraft, isCached);
         }
 
-        // Check if the aircraft is inside the danger zone
-        if (dangerZone && dangerZone.getBounds().contains(latLon)) {
-            showWarningAlert(aircraft);
+        if (dangerZone && dangerZone.getBounds().contains(latLon) && !isCached) {
+            // Replace alert with notification
+            showWarningNotification(aircraft);
         }
     }
     
-
-    
-
+    // Function to show warning notification for aircraft in danger zone
+    function showWarningNotification(aircraft) {
+        var title = 'Aircraft in Proximity';
+        var message = `${aircraft.flight || 'N/A'}: ${aircraft.alt_baro || 'N/A'}ft, ${aircraft.gs || 'N/A'}kn`;
+        showNotification('warning', title, message, 5000);
+    }
 
     // Function to fetch and update aircraft data
     function updateAircraftData() {
         fetch('https://aircraft.wiedenterprise.com/tar1090/data/aircraft.json')
             .then(response => response.json())
             .then(data => {
-                var currentUAVs = {}; // Track the current UAVs being processed
+                var currentUAVs = {};
+                let validAircraftCount = 0;
 
                 data.aircraft.forEach(aircraft => {
                     if (isValidLatLng(aircraft.lat, aircraft.lon)) {
-                        currentUAVs[aircraft.hex] = aircraft; // Add to current UAVs
+                        currentUAVs[aircraft.hex] = aircraft;
                         addOrUpdateMarker(aircraft);
+                        validAircraftCount++;
                     }
                 });
 
-                removeOutdatedUAVs(currentUAVs); // Remove UAVs that are no longer detected
+                // Update the counter with the number of valid aircraft
+                updateAircraftCounter(validAircraftCount);
 
-                // Remove markers that are no longer in the data
+                removeOutdatedUAVs(currentUAVs);
+
                 Object.keys(aircraftMarkers).forEach(key => {
                     if (!currentUAVs[key]) {
                         map.removeLayer(aircraftMarkers[key]);
                         delete aircraftMarkers[key];
                     }
                 });
+
+                localStorage.setItem('cachedAircraftData', JSON.stringify(cachedAircraftData));
             })
             .catch(error => console.error('Error fetching aircraft data:', error));
     }
 
     // Initial fetch and set interval for periodic updates
     updateAircraftData();
-    setInterval(updateAircraftData, 10000); // Refresh every 30 seconds
+    setInterval(updateAircraftData, 10000); // Refresh every 10 seconds
 
     // Geolocation to get and display the user's current location
     let userLocation;
@@ -242,9 +292,6 @@ document.addEventListener('DOMContentLoaded', function () {
             current_location_marker.bindPopup("Current Location" + " (" + MGRSString(lat, lon) + ")");
 
             map.setView([lat, lon], 9); // Center the map on the current location
-
-            // Add this line to create a fake aircraft after a short delay
-            setTimeout(addFakeAircraft, 2000);
         });
     } else {
         console.error('Geolocation is not supported by this browser.');
@@ -280,51 +327,53 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // In the updateMap function, modify the marker creation:
-    const marker = L.marker([airplane.lat, airplane.lon], { icon: airplaneIcon }).addTo(map);
-    marker.bindPopup(`Callsign: ${airplane.callsign || 'N/A'}<br>ICAO24: ${airplane.icao24}<br>Altitude: ${airplane.altitude} m`);
-    airplaneMarkers.set(airplane.icao24, marker);
+    // Add these variables at the beginning of your file
+    let cachedAircraftData = {};
 
-    // Add these new functions
-    function showWarningPopup() {
-        if (popupMessage) {
-            popupMessage.style.display = 'block';
-            // Hide the message after 5 seconds
-            setTimeout(hideWarningPopup, 5000);
+    // Add this function to load cached data
+    function loadCachedData() {
+        const cachedData = localStorage.getItem('cachedAircraftData');
+        if (cachedData) {
+            cachedAircraftData = JSON.parse(cachedData);
+            
+            // Display cached aircraft on the map
+            Object.values(cachedAircraftData).forEach(item => {
+                if (Date.now() - item.lastSeen < 24 * 60 * 60 * 1000) { // Only show aircraft seen in the last 24 hours
+                    addOrUpdateMarker(item.data, true);
+                }
+            });
         }
     }
 
-    function hideWarningPopup() {
-        if (popupMessage) {
-            popupMessage.style.display = 'none';
-        }
-    }
+    // Call loadCachedData at the beginning of your script
+    loadCachedData();
 
-    function showWarningAlert(aircraft) {
-        alert(`Aircraft detected close to your position!\nFlight: ${aircraft.flight || 'N/A'}\nAltitude: ${aircraft.alt_baro || 'N/A'} ft\nSpeed: ${aircraft.gs || 'N/A'} knots`);
-    }
-
-    // Add this function near the top of your file, after the document.addEventListener('DOMContentLoaded', function () { ... line
-    function addFakeAircraft() {
-        if (userLocation && dangerZone) {
-            // Generate a random position within the danger zone
-            const angle = Math.random() * 2 * Math.PI;
-            const radius = Math.sqrt(Math.random()) * dangerZone.getRadius();
-            const x = userLocation[0] + (radius * Math.cos(angle) / 111111);
-            const y = userLocation[1] + (radius * Math.sin(angle) / (111111 * Math.cos(userLocation[0] * Math.PI / 180)));
-
-            const fakeAircraft = {
-                hex: 'FAKE01',
-                flight: 'TEST123',
-                lat: x,
-                lon: y,
-                alt_baro: Math.floor(Math.random() * 10000) + 1000,
-                gs: Math.floor(Math.random() * 500) + 100,
-                category: 'A1'
-            };
-
-            addOrUpdateMarker(fakeAircraft);
-            showWarningAlert(fakeAircraft);
+    // Function to update the aircraft counter with the number of valid aircraft
+    function updateAircraftCounter(count) {
+        var counterElement = document.getElementById('number_UAV_detected');
+        if (counterElement) {
+            // Save the previous count to check for changes
+            var prevCount = parseInt(counterElement.textContent) || 0;
+            
+            // Update the count
+            counterElement.textContent = count;
+            
+            // If the count has changed, add the pulsing class
+            if (count !== prevCount) {
+                // Remove the class first to reset animation if already active
+                counterElement.classList.remove('new-detection');
+                
+                // Force a reflow
+                void counterElement.offsetWidth;
+                
+                // Add the class to trigger animation
+                counterElement.classList.add('new-detection');
+                
+                // Remove the class after animation completes (3 seconds)
+                setTimeout(function() {
+                    counterElement.classList.remove('new-detection');
+                }, 3000);
+            }
         }
     }
 });
