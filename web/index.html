@@ -76,6 +76,13 @@
 				</div>
 			</div>
 		</div>
+
+		<div class="map-controls">
+			<button id="toggle-trails" class="control-button">
+				<span class="control-icon">🛩️</span>
+				<span class="control-text">Ghost Trails</span>
+			</button>
+		</div>
 	</div>
 
 	<script src="assets/js/map.js"></script>
@@ -84,10 +91,50 @@
 	<script src="assets/js/setting.js"></script>
 	<script src="assets/external/bootstrap/bootstrap-5.3.3-dist/js/bootstrap.bundle.min.js"></script>
 	<script src="assets/js/require_login.js"></script>
+	
+	<!-- Initialize modal close buttons -->
+	<script>
+		document.addEventListener('DOMContentLoaded', function() {
+			// Initialize all modal close buttons
+			var closeButtons = document.querySelectorAll('.close-modal');
+			closeButtons.forEach(function(button) {
+				button.addEventListener('click', function() {
+					var modal = this.closest('.modal');
+					if (modal) {
+						modal.style.display = 'none';
+					}
+				});
+			});
+		});
+	</script>
 
 	<footer style="color: white">
 		&copy; 2024 Alex Moran, Lucas Burlingham, Cade Wied, Cameron Wied, All Rights Reserved.
 	</footer>
+
+	<!-- Add this at the end of the body, before closing body tag -->
+	<div class="modal" id="trails-info-modal">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h3>Aircraft Ghost Trails</h3>
+				<span class="close-modal">&times;</span>
+			</div>
+			<div class="modal-body">
+				<p>The Ghost Trails feature provides enhanced situational awareness by showing:</p>
+				<ul>
+					<li><span class="trail-history">━━━━</span> <strong>Path History:</strong> Shows where the aircraft has been (dashed line)</li>
+					<li><span class="trail-prediction">┈┈┈┈</span> <strong>Trajectory Prediction:</strong> Shows where the aircraft is likely heading (5-minute forecast)</li>
+				</ul>
+				<p>Trail colors indicate threat levels:</p>
+				<ul>
+					<li><span class="threat-indicator" style="background-color: #2ecc71;"></span> <strong>Low Threat:</strong> Normal civilian aircraft</li>
+					<li><span class="threat-indicator" style="background-color: #f39c12;"></span> <strong>Medium Threat:</strong> Military or unidentified aircraft</li>
+					<li><span class="threat-indicator" style="background-color: #e74c3c;"></span> <strong>High Threat:</strong> Aircraft with erratic behavior or airspace violations</li>
+				</ul>
+				<p>Toggle ghost trails on/off using the button in the bottom-left corner of the map.</p>
+			</div>
+		</div>
+	</div>
 
 </body>
 

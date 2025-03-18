@@ -778,57 +778,43 @@ div[style*="background-color: red"] {
 
 /* Threat Level ring for map markers */
 .threat-ring-low {
-	border: 2px solid rgba(0, 255, 65, 0.7);
 	border-radius: 50%;
-	animation: threat-ring-pulse-low 3s infinite;
+	border: 2px solid #2ecc71;
+	box-shadow: 0 0 8px #2ecc71;
+	animation: pulse-low 2s infinite;
 }
 
 .threat-ring-medium {
-	border: 2px solid rgba(255, 204, 0, 0.7);
 	border-radius: 50%;
-	animation: threat-ring-pulse-medium 2s infinite;
+	border: 2px solid #f39c12;
+	box-shadow: 0 0 10px #f39c12;
+	animation: pulse-medium 2s infinite;
 }
 
 .threat-ring-high {
-	border: 2px solid rgba(255, 49, 49, 0.7);
 	border-radius: 50%;
-	animation: threat-ring-pulse-high 1s infinite;
+	border: 3px solid #e74c3c;
+	box-shadow: 0 0 12px #e74c3c;
+	animation: pulse-high 1.5s infinite;
 }
 
-@keyframes threat-ring-pulse-low {
-	0% {
-		box-shadow: 0 0 0 0 rgba(0, 255, 65, 0.4);
-	}
-	70% {
-		box-shadow: 0 0 0 15px rgba(0, 255, 65, 0);
-	}
-	100% {
-		box-shadow: 0 0 0 0 rgba(0, 255, 65, 0);
-	}
+/* Pulse animations for threat levels */
+@keyframes pulse-low {
+	0% { box-shadow: 0 0 5px #2ecc71; }
+	50% { box-shadow: 0 0 15px #2ecc71; }
+	100% { box-shadow: 0 0 5px #2ecc71; }
 }
 
-@keyframes threat-ring-pulse-medium {
-	0% {
-		box-shadow: 0 0 0 0 rgba(255, 204, 0, 0.4);
-	}
-	70% {
-		box-shadow: 0 0 0 15px rgba(255, 204, 0, 0);
-	}
-	100% {
-		box-shadow: 0 0 0 0 rgba(255, 204, 0, 0);
-	}
+@keyframes pulse-medium {
+	0% { box-shadow: 0 0 8px #f39c12; }
+	50% { box-shadow: 0 0 20px #f39c12; }
+	100% { box-shadow: 0 0 8px #f39c12; }
 }
 
-@keyframes threat-ring-pulse-high {
-	0% {
-		box-shadow: 0 0 0 0 rgba(255, 49, 49, 0.4);
-	}
-	70% {
-		box-shadow: 0 0 0 15px rgba(255, 49, 49, 0);
-	}
-	100% {
-		box-shadow: 0 0 0 0 rgba(255, 49, 49, 0);
-	}
+@keyframes pulse-high {
+	0% { box-shadow: 0 0 10px #e74c3c; }
+	50% { box-shadow: 0 0 25px #e74c3c; }
+	100% { box-shadow: 0 0 10px #e74c3c; }
 }
 
 /* Threat level legend */
@@ -866,6 +852,346 @@ div[style*="background-color: red"] {
 	100% {
 		box-shadow: 0 0 15px rgba(255, 49, 49, 0.3);
 	}
+}
+
+/* Aircraft Icons - Modern glowing effect */
+.aircraft-icon {
+	filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.7));
+}
+
+.threat-low .aircraft-icon {
+	filter: brightness(1.5) drop-shadow(0 0 8px rgba(0, 255, 65, 0.7));
+}
+
+.threat-medium .aircraft-icon {
+	filter: brightness(1.5) drop-shadow(0 0 8px rgba(255, 204, 0, 0.7));
+}
+
+.threat-high .aircraft-icon {
+	filter: brightness(1.5) drop-shadow(0 0 8px rgba(255, 49, 49, 0.8));
+	animation: high-threat-pulse 1.5s infinite;
+}
+
+@keyframes high-threat-pulse {
+	0% {
+		filter: brightness(1.5) drop-shadow(0 0 8px rgba(255, 49, 49, 0.8));
+	}
+	50% {
+		filter: brightness(1.8) drop-shadow(0 0 12px rgba(255, 49, 49, 1));
+	}
+	100% {
+		filter: brightness(1.5) drop-shadow(0 0 8px rgba(255, 49, 49, 0.8));
+	}
+}
+
+/* Aircraft rotation animation */
+@keyframes radar-rotation {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.threat-ring-low, .threat-ring-medium, .threat-ring-high {
+	position: relative;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.threat-ring-low::before,
+.threat-ring-medium::before,
+.threat-ring-high::before {
+	content: "";
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	border-radius: 50%;
+	box-sizing: border-box;
+	border: 2px solid transparent;
+}
+
+.threat-ring-low::before {
+	border-top: 2px solid rgba(0, 255, 65, 0.7);
+	animation: radar-rotation 3s linear infinite;
+}
+
+.threat-ring-medium::before {
+	border-top: 2px solid rgba(255, 204, 0, 0.7);
+	animation: radar-rotation 2s linear infinite;
+}
+
+.threat-ring-high::before {
+	border-top: 2px solid rgba(255, 49, 49, 0.7);
+	animation: radar-rotation 1s linear infinite;
+}
+
+/* Cached aircraft styling */
+.cached-aircraft {
+	opacity: 0.6;
+}
+
+/* Hover effect for aircraft markers */
+.leaflet-marker-icon:hover .aircraft-icon {
+	filter: drop-shadow(0 0 5px rgba(255, 255, 255, 1));
+	transform: scale(1.1);
+	transition: all 0.2s ease;
+}
+
+/* Aircraft path trails - enhanced visibility */
+.aircraft-path {
+	filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.4));
+	transition: all 0.3s ease;
+	animation: path-fade 10s infinite;
+}
+
+.prediction-path {
+	filter: drop-shadow(0 0 3px rgba(255, 255, 255, 0.4));
+	opacity: 0.7;
+	animation: prediction-pulse 3s infinite;
+}
+
+/* Enhanced prediction paths for different threat levels */
+.threat-medium-prediction {
+	filter: drop-shadow(0 0 6px rgba(255, 204, 0, 0.9)) !important;
+	opacity: 0.8 !important;
+}
+
+.threat-high-prediction {
+	filter: drop-shadow(0 0 7px rgba(255, 49, 49, 1)) !important;
+	opacity: 0.9 !important;
+	animation: high-threat-prediction-pulse 1.5s infinite !important;
+}
+
+@keyframes high-threat-prediction-pulse {
+	0% { filter: drop-shadow(0 0 6px rgba(255, 49, 49, 0.9)); }
+	50% { filter: drop-shadow(0 0 9px rgba(255, 49, 49, 1)); }
+	100% { filter: drop-shadow(0 0 6px rgba(255, 49, 49, 0.9)); }
+}
+
+@keyframes path-fade {
+	0% { opacity: 0.8; }
+	50% { opacity: 0.6; }
+	100% { opacity: 0.8; }
+}
+
+@keyframes prediction-pulse {
+	0% { opacity: 0.7; }
+	50% { opacity: 0.5; }
+	100% { opacity: 0.7; }
+}
+
+/* Path color glow effects based on threat */
+.threat-low .aircraft-path {
+	filter: drop-shadow(0 0 3px rgba(46, 204, 113, 0.7));
+}
+
+.threat-medium .aircraft-path {
+	filter: drop-shadow(0 0 5px rgba(243, 156, 18, 0.9));
+	opacity: 0.85;
+}
+
+.threat-high .aircraft-path {
+	filter: drop-shadow(0 0 6px rgba(231, 76, 60, 1));
+	opacity: 0.9;
+	animation: high-threat-path-pulse 1.5s infinite;
+}
+
+@keyframes high-threat-path-pulse {
+	0% { filter: drop-shadow(0 0 5px rgba(231, 76, 60, 0.9)); }
+	50% { filter: drop-shadow(0 0 8px rgba(231, 76, 60, 1)); }
+	100% { filter: drop-shadow(0 0 5px rgba(231, 76, 60, 0.9)); }
+}
+
+/* Map Controls */
+.map-controls {
+	position: absolute;
+	bottom: 20px;
+	left: 20px;
+	z-index: 1000;
+	display: flex;
+	gap: 10px;
+}
+
+.control-button {
+	background-color: rgba(13, 13, 13, 0.8);
+	color: var(--primary);
+	border: 1px solid var(--primary);
+	padding: 8px 12px;
+	border-radius: 0;
+	font-family: 'IBM Plex Mono', monospace;
+	font-size: 0.8rem;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	transition: all 0.3s ease;
+	box-shadow: 0 0 10px var(--primary-glow);
+	backdrop-filter: blur(var(--blur));
+	-webkit-backdrop-filter: blur(var(--blur));
+}
+
+.control-button:hover {
+	background-color: rgba(0, 255, 65, 0.15);
+	transform: translateY(-2px);
+	box-shadow: 0 0 15px var(--primary-glow);
+}
+
+.control-button.active {
+	background-color: rgba(0, 255, 65, 0.2);
+	box-shadow: 0 0 15px var(--primary-glow), 0 0 5px var(--primary-glow) inset;
+}
+
+.control-icon {
+	font-size: 1rem;
+}
+
+/* Responsive styles for map controls */
+@media (max-width: 576px) {
+	.map-controls {
+		bottom: 15px;
+		left: 15px;
+	}
+	
+	.control-button {
+		padding: 6px 10px;
+		font-size: 0.7rem;
+	}
+	
+	.control-text {
+		display: none; /* Hide text on small screens */
+	}
+	
+	.control-icon {
+		font-size: 0.9rem;
+	}
+}
+
+/* Modal styles */
+.modal {
+	display: none;
+	position: fixed;
+	z-index: 9999;
+	left: 0;
+	top: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.7);
+	overflow: auto;
+	backdrop-filter: blur(3px);
+}
+
+.modal-content {
+	background-color: var(--dark-grey);
+	margin: 10% auto;
+	padding: 0;
+	width: 80%;
+	max-width: 500px;
+	border: 1px solid var(--primary);
+	box-shadow: 0 0 20px var(--primary-glow);
+	animation: modal-appear 0.3s ease-out;
+	max-height: 80vh;
+	overflow-y: auto;
+}
+
+@keyframes modal-appear {
+	from {
+		opacity: 0;
+		transform: translateY(-30px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.modal-header {
+	padding: 15px;
+	border-bottom: 1px solid var(--border);
+	position: relative;
+	background-color: rgba(0, 0, 0, 0.3);
+}
+
+.modal-header h3 {
+	margin: 0;
+	color: var(--primary);
+	font-size: 1.2rem;
+	text-align: left;
+}
+
+.close-modal {
+	position: absolute;
+	right: 15px;
+	top: 10px;
+	color: var(--text-secondary);
+	font-size: 24px;
+	font-weight: bold;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	width: 30px;
+	height: 30px;
+	line-height: 30px;
+	text-align: center;
+	border-radius: 4px;
+	z-index: 1001;
+}
+
+.close-modal:hover {
+	color: var(--primary);
+	text-shadow: 0 0 5px var(--primary-glow);
+	background-color: rgba(0, 0, 0, 0.2);
+}
+
+.modal-body {
+	padding: 15px;
+	color: var(--text);
+	font-size: 0.9rem;
+	line-height: 1.5;
+}
+
+.modal-body p {
+	margin-bottom: 10px;
+}
+
+.modal-body ul {
+	list-style-type: none;
+	padding-left: 0;
+	margin-bottom: 15px;
+}
+
+.modal-body li {
+	margin-bottom: 8px;
+	display: flex;
+	align-items: center;
+}
+
+/* Trail indicators in the modal */
+.trail-history, .trail-prediction {
+	display: inline-block;
+	width: 50px;
+	margin-right: 10px;
+	color: var(--primary);
+	letter-spacing: 2px;
+}
+
+.trail-history {
+	opacity: 0.7;
+}
+
+.trail-prediction {
+	opacity: 0.5;
+}
+
+.threat-indicator {
+	display: inline-block;
+	width: 16px;
+	height: 16px;
+	border-radius: 50%;
+	margin-right: 10px;
+	box-shadow: 0 0 5px currentColor;
 }
 
 

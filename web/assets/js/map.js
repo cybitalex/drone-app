@@ -15,6 +15,8 @@ document.addEventListener('DOMContentLoaded', function () {
     // Store markers in a map for easy updating
     var aircraftMarkers = {};
     var displayedUAVs = {}; // Track UAVs currently in the list
+    var aircraftPaths = {}; // Store path history for each aircraft
+    var aircraftPredictions = {}; // Store prediction paths
 
     // Create notification container if it doesn't exist
     var notificationContainer = document.querySelector('.notification-container');
@@ -63,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function () {
             aircraft.flight.includes('RCH') || 
             aircraft.flight.includes('DRACO') ||
             aircraft.category === "A6" || // High performance
-            aircraft.category === "A4") { // High vortex large
+            aircraft.category === "A4") {
             return 'medium';
         }
         
@@ -144,6 +146,17 @@ document.addEventListener('DOMContentLoaded', function () {
                 var listItem = displayedUAVs[key];
                 listItem.remove(); // Remove the UAV from the list
                 delete displayedUAVs[key]; // Remove it from the tracked UAVs
+                
+                // Remove path history and prediction
+                if (aircraftPaths[key] && aircraftPaths[key].path) {
+                    map.removeLayer(aircraftPaths[key].path);
+                    delete aircraftPaths[key];
+                }
+                
+                if (aircraftPredictions[key] && aircraftPredictions[key].path) {
+                    map.removeLayer(aircraftPredictions[key].path);
+                    delete aircraftPredictions[key];
+                }
             }
         });
     }
@@ -228,21 +241,24 @@ document.addEventListener('DOMContentLoaded', function () {
         var threatLevel = determineThreatLevel(aircraft);
         var rotationAngle = aircraft.track || 0;
 
-        // Create marker with threat level ring
+        // Create modern styled marker with threat-based effects
         var icon = L.divIcon({
             html: `
-                <div class="threat-ring-${threatLevel}" style="width: 40px; height: 40px; position: relative;">
+                <div class="threat-ring-${threatLevel}" style="width: 50px; height: 50px; position: relative;">
                     <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(${rotationAngle}deg);">
-                        <img src="${icons[type].options.iconUrl}" style="width: ${icons[type].options.iconSize[0]}px; height: ${icons[type].options.iconSize[1]}px; background: none;">
+                        <svg class="aircraft-icon" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="white" stroke="#000" stroke-width="0.5">
+                            ${getAircraftSvgPath(type)}
+                        </svg>
                     </div>
                 </div>
             `,
-            iconSize: [40, 40],
-            iconAnchor: [20, 20],
-            popupAnchor: [0, -20],
+            iconSize: [50, 50],
+            iconAnchor: [25, 25],
+            popupAnchor: [0, -25],
             className: isCached ? `cached-aircraft threat-${threatLevel}` : `threat-${threatLevel}`
         });
 
+        // Update or create marker
         if (aircraftMarkers[key]) {
             aircraftMarkers[key].setLatLng(latLon);
             aircraftMarkers[key].setIcon(icon);
@@ -255,6 +271,11 @@ document.addEventListener('DOMContentLoaded', function () {
             updateUAVList(aircraft, isCached);
         }
 
+        // Update path history (only for live aircraft, not cached)
+        if (!isCached) {
+            updateAircraftPath(key, latLon, aircraft);
+        }
+
         // Show warning for high threat aircraft
         if (threatLevel === 'high' && !isCached) {
             showThreatNotification(aircraft);
@@ -263,6 +284,31 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
     
+    // Function to get SVG path based on aircraft type
+    function getAircraftSvgPath(type) {
+        switch(type) {
+            case 'plane':
+                // Light aircraft - more recognizable top-down view
+                return '<path d="M12,2l-1,6l-7,3l-2,2l9,2l0,6l-3,1l0,1l4,1l4-1l0-1l-3-1l0-6l9-2l-2-2l-7-3z"/>';
+            case 'jet':
+                // Fighter jet - sleek design
+                return '<path d="M12,2l-1.5,9h-6l-2.5,2h4l-2,5v2l3-1l2-2l2,2l3,1v-2l-2-5h4l-2.5-2h-6z"/>';
+            case 'bomber':
+                // Bomber with distinct wings
+                return '<path d="M12,2l-2,4l-6,2l-1,2l5,1l-0.5,6l-1.5,2v2l4-1l2-2l2,2l4,1v-2l-1.5-2l-0.5-6l5-1l-1-2l-6-2z"/>';
+            case 'helicopter':
+                // Helicopter from top view with rotor
+                return '<path d="M8,12c0,0-4-0.5-4-2.5s4-2.5,4-2.5v-1h8v1c0,0,4,0.5,4,2.5s-4,2.5-4,2.5v4c0,0.5-0.5,1-1,1h-6c-0.5,0-1-0.5-1-1V12z"/><path d="M2,9.5h20M2,9.5h20" stroke="white" stroke-width="0.7"/>';
+            case 'hotairballoon':
+                // More recognizable balloon
+                return '<path d="M12,2c-3.3,0-6,2.7-6,6c0,3,2,4.3,3,6v4c0,1.1,0.9,2,2,2h2c1.1,0,2-0.9,2-2v-4c1-1.7,3-3,3-6C18,4.7,15.3,2,12,2z"/>';
+            case 'airplane':
+            default:
+                // Commercial airliner top-down view
+                return '<path d="M12,2l-2,9l-8,3v2l8,2v3l-3,1v1l5,1l5-1v-1l-3-1v-3l8-2v-2l-8-3z"/>';
+        }
+    }
+
     // Function to show warning notification for aircraft in danger zone
     function showWarningNotification(aircraft) {
         var title = 'Aircraft in Proximity';
@@ -455,4 +501,248 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     }
+
+    // Track ghost trails visibility
+    var showGhostTrails = true;
+    
+    // Set up trail toggle button
+    var trailToggleButton = document.getElementById('toggle-trails');
+    if (trailToggleButton) {
+        trailToggleButton.classList.add('active'); // Active by default
+        
+        trailToggleButton.addEventListener('click', function() {
+            showGhostTrails = !showGhostTrails;
+            toggleGhostTrails(showGhostTrails);
+            
+            // Update button state
+            if (showGhostTrails) {
+                trailToggleButton.classList.add('active');
+            } else {
+                trailToggleButton.classList.remove('active');
+            }
+        });
+        
+        // Add info button next to toggle
+        var infoButton = document.createElement('button');
+        infoButton.className = 'control-button info-button';
+        infoButton.innerHTML = '<span class="control-icon">ℹ️</span><span class="control-text">Info</span>';
+        infoButton.addEventListener('click', function() {
+            openTrailsInfoModal();
+            
+            // Ensure close button works by directly targeting it after modal opens
+            setTimeout(function() {
+                var closeModalBtn = document.querySelector('#trails-info-modal .close-modal');
+                if (closeModalBtn) {
+                    closeModalBtn.onclick = function() {
+                        document.getElementById('trails-info-modal').style.display = 'none';
+                    };
+                }
+            }, 100);
+        });
+        
+        // Add to controls
+        var mapControls = document.querySelector('.map-controls');
+        if (mapControls) {
+            mapControls.appendChild(infoButton);
+        }
+    }
+    
+    // Function to toggle visibility of all ghost trails
+    function toggleGhostTrails(visible) {
+        // Toggle history paths
+        Object.keys(aircraftPaths).forEach(key => {
+            if (aircraftPaths[key] && aircraftPaths[key].path) {
+                if (visible) {
+                    aircraftPaths[key].path.addTo(map);
+                } else {
+                    map.removeLayer(aircraftPaths[key].path);
+                }
+            }
+        });
+        
+        // Toggle prediction paths
+        Object.keys(aircraftPredictions).forEach(key => {
+            if (aircraftPredictions[key] && aircraftPredictions[key].path) {
+                if (visible) {
+                    aircraftPredictions[key].path.addTo(map);
+                } else {
+                    map.removeLayer(aircraftPredictions[key].path);
+                }
+            }
+        });
+    }
+
+    // Update these functions to respect the trails visibility setting
+    function updateAircraftPath(key, position, aircraft) {
+        // Initialize path array if it doesn't exist
+        if (!aircraftPaths[key]) {
+            aircraftPaths[key] = {
+                positions: [],
+                polyline: null,
+                lastUpdate: Date.now(),
+                path: L.polyline([], {
+                    color: getThreatColor(determineThreatLevel(aircraft)),
+                    weight: 2,
+                    opacity: 0.7,
+                    dashArray: '5, 5',
+                    className: 'aircraft-path'
+                })
+            };
+            
+            // Only add to map if ghost trails are enabled
+            if (showGhostTrails) {
+                aircraftPaths[key].path.addTo(map);
+            }
+        }
+        
+        // Add current position to path history, limit to 10 positions for performance
+        aircraftPaths[key].positions.push(position);
+        if (aircraftPaths[key].positions.length > 10) {
+            aircraftPaths[key].positions.shift();
+        }
+        
+        // Update the polyline with new positions
+        aircraftPaths[key].path.setLatLngs(aircraftPaths[key].positions);
+        aircraftPaths[key].lastUpdate = Date.now();
+        
+        // Update the prediction path if we have speed and direction
+        if (aircraft.gs && (aircraft.track !== undefined)) {
+            updatePredictionPath(key, position, aircraft);
+        }
+    }
+
+    function updatePredictionPath(key, currentPosition, aircraft) {
+        // Remove old prediction path if exists
+        if (aircraftPredictions[key] && aircraftPredictions[key].path) {
+            map.removeLayer(aircraftPredictions[key].path);
+        }
+        
+        // Calculate prediction points based on current position, speed and heading
+        var predictionPoints = calculatePredictionPoints(currentPosition, aircraft.gs, aircraft.track);
+        
+        // Create new prediction path with adjusted styling based on threat level
+        var threatLevel = determineThreatLevel(aircraft);
+        var predictionWeight = 2;
+        var predictionOpacity = 0.6;
+        
+        // Adjust styling based on threat level for better visibility
+        if (threatLevel === 'medium') {
+            predictionWeight = 3;
+            predictionOpacity = 0.7;
+        } else if (threatLevel === 'high') {
+            predictionWeight = 3;
+            predictionOpacity = 0.8;
+        }
+        
+        var predictionPath = L.polyline(predictionPoints, {
+            color: getThreatColor(threatLevel),
+            weight: predictionWeight,
+            opacity: predictionOpacity,
+            dashArray: '3, 7',
+            className: 'prediction-path threat-' + threatLevel + '-prediction'
+        });
+        
+        // Only add to map if ghost trails are enabled
+        if (showGhostTrails) {
+            predictionPath.addTo(map);
+        }
+        
+        // Store the prediction path
+        aircraftPredictions[key] = {
+            path: predictionPath,
+            lastUpdate: Date.now()
+        };
+    }
+
+    // Calculate prediction points based on current position, speed and heading
+    function calculatePredictionPoints(currentPosition, speed, heading) {
+        var points = [currentPosition];
+        var lat = currentPosition[0];
+        var lon = currentPosition[1];
+        var speedMps = speed * 0.51444; // Convert knots to m/s
+        
+        // Create 5 prediction points at 1-minute intervals
+        for (var i = 1; i <= 5; i++) {
+            // Calculate distance traveled in 1 minute
+            var distance = speedMps * 60 * i; // distance in meters for i minutes
+            
+            // Calculate new position based on bearing and distance
+            var newPosition = calculateDestination(lat, lon, heading, distance);
+            points.push(newPosition);
+        }
+        
+        return points;
+    }
+
+    // Calculate destination point given starting point, bearing, and distance
+    function calculateDestination(lat, lon, bearing, distance) {
+        // Earth's radius in meters
+        var R = 6371000;
+        
+        // Convert to radians
+        var lat1 = lat * Math.PI / 180;
+        var lon1 = lon * Math.PI / 180;
+        var brng = bearing * Math.PI / 180;
+        
+        // Calculate new latitude
+        var lat2 = Math.asin(
+            Math.sin(lat1) * Math.cos(distance/R) + 
+            Math.cos(lat1) * Math.sin(distance/R) * Math.cos(brng)
+        );
+        
+        // Calculate new longitude
+        var lon2 = lon1 + Math.atan2(
+            Math.sin(brng) * Math.sin(distance/R) * Math.cos(lat1),
+            Math.cos(distance/R) - Math.sin(lat1) * Math.sin(lat2)
+        );
+        
+        // Convert back to degrees
+        lat2 = lat2 * 180 / Math.PI;
+        lon2 = lon2 * 180 / Math.PI;
+        
+        return [lat2, lon2];
+    }
+
+    // Function to get color based on threat level
+    function getThreatColor(threatLevel) {
+        switch(threatLevel) {
+            case 'high':
+                return '#ff3131'; // Brighter red
+            case 'medium':
+                return '#ffcc00'; // Brighter yellow
+            case 'low':
+                return '#2ecc71'; // Green
+            default:
+                return '#3498db'; // Blue
+        }
+    }
+
+    // Modal functionality
+    function openTrailsInfoModal() {
+        var modal = document.getElementById('trails-info-modal');
+        if (modal) {
+            modal.style.display = 'block';
+        }
+    }
+
+    // Set up modal close functionality
+    var closeButtons = document.getElementsByClassName('close-modal');
+    for (var i = 0; i < closeButtons.length; i++) {
+        closeButtons[i].addEventListener('click', function() {
+            var modal = this.closest('.modal');
+            if (modal) {
+                modal.style.display = 'none';
+            }
+        });
+    }
+    
+    // Close modal when clicking outside
+    window.addEventListener('click', function(event) {
+        var modals = document.getElementsByClassName('modal');
+        for (var i = 0; i < modals.length; i++) {
+            if (event.target === modals[i]) {
+                modals[i].style.display = 'none';
+            }
+        }
+    });
 });
